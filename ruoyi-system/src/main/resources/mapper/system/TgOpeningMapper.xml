@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgOpeningMapper">
+
+    <resultMap type="TgOpening" id="TgOpeningResult">
+        <result property="id"          column="id"          />
+        <result property="content"     column="content"     />
+        <result property="isEnabled"   column="is_enabled"  />
+        <result property="sortOrder"   column="sort_order"  />
+        <result property="remark"      column="remark"      />
+        <result property="createTime"  column="create_time" />
+        <result property="updateTime"  column="update_time" />
+    </resultMap>
+
+    <sql id="selectVo">
+        select id, content, is_enabled, sort_order, remark, create_time, update_time
+        from tg_opening
+    </sql>
+
+    <select id="selectById" parameterType="Integer" resultMap="TgOpeningResult">
+        <include refid="selectVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectList" parameterType="TgOpening" resultMap="TgOpeningResult">
+        <include refid="selectVo"/>
+        <where>
+            <if test="content != null and content != ''">
+                AND content like concat('%', #{content}, '%')
+            </if>
+            <if test="isEnabled != null">
+                AND is_enabled = #{isEnabled}
+            </if>
+        </where>
+        order by sort_order asc, id desc
+    </select>
+
+    <insert id="insert" parameterType="TgOpening" useGeneratedKeys="true" keyProperty="id">
+        insert into tg_opening (content, is_enabled, sort_order, remark, create_time)
+        values (#{content}, #{isEnabled}, #{sortOrder}, #{remark}, now())
+    </insert>
+
+    <update id="update" parameterType="TgOpening">
+        update tg_opening
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="content != null">content = #{content},</if>
+            <if test="isEnabled != null">is_enabled = #{isEnabled},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = now(),
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteByIds" parameterType="String">
+        delete from tg_opening where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

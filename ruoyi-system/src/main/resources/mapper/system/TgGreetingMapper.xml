@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgGreetingMapper">
+
+    <resultMap type="TgGreeting" id="TgGreetingResult">
+        <result property="id"          column="id"          />
+        <result property="title"       column="title"       />
+        <result property="content"     column="content"     />
+        <result property="state"       column="state"       />
+        <result property="isEnabled"   column="is_enabled"  />
+        <result property="sortOrder"   column="sort_order"  />
+        <result property="imagePath"   column="image_path"  />
+        <result property="remark"      column="remark"      />
+        <result property="createTime"  column="create_time" />
+        <result property="updateTime"  column="update_time" />
+    </resultMap>
+
+    <sql id="selectVo">
+        select id, title, content, state, is_enabled, sort_order, image_path, remark, create_time, update_time
+        from tg_greeting
+    </sql>
+
+    <select id="selectById" parameterType="Integer" resultMap="TgGreetingResult">
+        <include refid="selectVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectList" parameterType="TgGreeting" resultMap="TgGreetingResult">
+        <include refid="selectVo"/>
+        <where>
+            <if test="title != null and title != ''">
+                AND title like concat('%', #{title}, '%')
+            </if>
+            <if test="content != null and content != ''">
+                AND content like concat('%', #{content}, '%')
+            </if>
+            <if test="state != null">
+                AND state = #{state}
+            </if>
+            <if test="isEnabled != null">
+                AND is_enabled = #{isEnabled}
+            </if>
+        </where>
+        order by sort_order asc, id desc
+    </select>
+
+    <insert id="insert" parameterType="TgGreeting" useGeneratedKeys="true" keyProperty="id">
+        insert into tg_greeting (title, content, state, is_enabled, sort_order, image_path, remark, create_time)
+        values (#{title}, #{content}, #{state}, #{isEnabled}, #{sortOrder}, #{imagePath}, #{remark}, now())
+    </insert>
+
+    <update id="update" parameterType="TgGreeting">
+        update tg_greeting
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="title != null">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="state != null">state = #{state},</if>
+            <if test="isEnabled != null">is_enabled = #{isEnabled},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="imagePath != null">image_path = #{imagePath},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = now(),
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteByIds" parameterType="String">
+        delete from tg_greeting where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

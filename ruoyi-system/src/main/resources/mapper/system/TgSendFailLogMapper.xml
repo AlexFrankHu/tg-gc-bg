@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgSendFailLogMapper">
+
+    <resultMap type="TgSendFailLog" id="TgSendFailLogResult">
+        <result property="id"              column="id"              />
+        <result property="phone"           column="phone"           />
+        <result property="tgAccountId"     column="tg_account_id"   />
+        <result property="nickname"        column="nickname"        />
+        <result property="userId"          column="user_id"         />
+        <result property="friendNickname"  column="friend_nickname" />
+        <result property="friendPhone"     column="friend_phone"    />
+        <result property="contentType"     column="content_type"    />
+        <result property="content"         column="content"         />
+        <result property="errorReason"     column="error_reason"    />
+        <result property="sendTime"        column="send_time"       />
+        <result property="createTime"      column="create_time"     />
+    </resultMap>
+
+    <select id="selectList" parameterType="TgSendFailLog" resultMap="TgSendFailLogResult">
+        select * from tg_send_fail_log
+        <where>
+            <if test="phone != null and phone != ''">AND phone like concat('%', #{phone}, '%')</if>
+            <if test="friendNickname != null and friendNickname != ''">AND friend_nickname like concat('%', #{friendNickname}, '%')</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

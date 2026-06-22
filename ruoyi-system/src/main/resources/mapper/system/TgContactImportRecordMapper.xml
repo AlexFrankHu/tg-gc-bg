@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgContactImportRecordMapper">
+
+    <resultMap type="TgContactImportRecord" id="TgContactImportRecordResult">
+        <result property="id"         column="id"         />
+        <result property="batchNo"    column="batch_no"   />
+        <result property="phone"      column="phone"      />
+        <result property="username"   column="username"    />
+        <result property="createTime" column="create_time" />
+    </resultMap>
+
+    <select id="selectByBatchNo" parameterType="String" resultMap="TgContactImportRecordResult">
+        select id, batch_no, phone, username, create_time
+        from tg_contact_import_record
+        where batch_no = #{batchNo}
+        order by id asc
+    </select>
+
+    <insert id="insert" parameterType="TgContactImportRecord">
+        insert into tg_contact_import_record (batch_no, phone, username, create_time)
+        values (#{batchNo}, #{phone}, #{username}, now())
+    </insert>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into tg_contact_import_record (batch_no, phone, username, create_time) values
+        <foreach item="item" collection="list" separator=",">
+            (#{item.batchNo}, #{item.phone}, #{item.username}, now())
+        </foreach>
+    </insert>
+
+    <delete id="deleteByBatchNo" parameterType="String">
+        delete from tg_contact_import_record where batch_no = #{batchNo}
+    </delete>
+
+</mapper>

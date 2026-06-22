@@ -1,0 +1,134 @@
+import request from '@/utils/request'
+
+// 查询账号列表
+export function listAccount(query) {
+  return request({
+    url: '/tg/account/list',
+    method: 'get',
+    params: query
+  })
+}
+
+// 查询账号详细
+export function getAccount(id) {
+  return request({
+    url: '/tg/account/' + id,
+    method: 'get'
+  })
+}
+
+// 删除账号
+export function delAccount(id) {
+  return request({
+    url: '/tg/account/' + id,
+    method: 'delete'
+  })
+}
+
+// 触发登录
+export function triggerLogin(id) {
+  return request({
+    url: '/tg/account/login/' + id,
+    method: 'put'
+  })
+}
+
+// 无代理登录
+export function loginNoProxy(id) {
+  return request({
+    url: '/tg/account/loginNoProxy/' + id,
+    method: 'put'
+  })
+}
+
+// 登出账号
+export function logoutAccount(id) {
+  return request({
+    url: '/tg/account/logout/' + id,
+    method: 'put'
+  })
+}
+
+// 获取网页端token
+export function getWsToken(id) {
+  return request({
+    url: '/tg/account/wsToken/' + id,
+    method: 'get'
+  })
+}
+
+// 批量登录（按批次）
+export function loginBatch(batchNo) {
+  return request({
+    url: '/tg/account/loginBatch/' + batchNo,
+    method: 'put'
+  })
+}
+
+// 批量登出（按批次）
+export function logoutBatch(batchNo) {
+  return request({
+    url: '/tg/account/logoutBatch/' + batchNo,
+    method: 'put'
+  })
+}
+
+// 查看账号代理信息
+export function getProxyInfo(id) {
+  return request({
+    url: '/tg/account/proxy/' + id,
+    method: 'get'
+  })
+}
+
+// 自动选择代理IP
+export function autoSelectProxy(id, groupNo) {
+  return request({
+    url: '/tg/account/proxy/auto/' + id,
+    method: 'put',
+    params: { groupNo }
+  })
+}
+
+// 手动选择代理IP
+export function manualSelectProxy(id, proxyIpId) {
+  return request({
+    url: '/tg/account/proxy/manual/' + id,
+    method: 'put',
+    params: { proxyIpId }
+  })
+}
+
+// 手动配置代理IP
+export function configProxy(id, data) {
+  return request({
+    url: '/tg/account/proxy/config/' + id,
+    method: 'put',
+    data: data
+  })
+}
+
+// 批量为批次分配代理IP
+export function batchAssignProxy(batchNo, groupNo) {
+  return request({
+    url: '/tg/account/proxy/batch/' + batchNo,
+    method: 'put',
+    params: { groupNo }
+  })
+}
+
+// 切换单个账号自动回复
+export function updateAccountAutoReply(id, autoReply) {
+  return request({
+    url: '/tg/account/autoReply/' + id + '/' + autoReply,
+    method: 'put'
+  })
+}
+
+// 切换全部账号自动回复
+export function updateAllAccountAutoReply(autoReply) {
+  return request({
+    url: '/tg/account/autoReply/all/' + autoReply,
+    method: 'put'
+  })
+}

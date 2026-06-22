@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgProxyAssignLogMapper">
+
+    <resultMap type="TgProxyAssignLog" id="TgProxyAssignLogResult">
+        <result property="id"                 column="id"                  />
+        <result property="accountBatchNo"     column="account_batch_no"    />
+        <result property="accountBatchTitle"  column="account_batch_title" />
+        <result property="accountId"          column="account_id"          />
+        <result property="accountPhone"       column="account_phone"       />
+        <result property="proxyGroupNo"       column="proxy_group_no"      />
+        <result property="proxyGroupTitle"    column="proxy_group_title"   />
+        <result property="proxyIpId"          column="proxy_ip_id"         />
+        <result property="proxyUrl"           column="proxy_url"           />
+        <result property="createTime"         column="create_time"         />
+    </resultMap>
+
+    <select id="selectList" parameterType="TgProxyAssignLog" resultMap="TgProxyAssignLogResult">
+        select * from tg_proxy_assign_log
+        <where>
+            <if test="accountBatchNo != null and accountBatchNo != ''">AND account_batch_no = #{accountBatchNo}</if>
+            <if test="proxyGroupNo != null and proxyGroupNo != ''">AND proxy_group_no = #{proxyGroupNo}</if>
+            <if test="accountPhone != null and accountPhone != ''">AND account_phone = #{accountPhone}</if>
+        </where>
+        order by id desc
+    </select>
+
+    <insert id="insert" parameterType="TgProxyAssignLog">
+        insert into tg_proxy_assign_log (account_batch_no, account_batch_title, account_id, account_phone,
+            proxy_group_no, proxy_group_title, proxy_ip_id, proxy_url, create_time)
+        values (#{accountBatchNo}, #{accountBatchTitle}, #{accountId}, #{accountPhone},
+            #{proxyGroupNo}, #{proxyGroupTitle}, #{proxyIpId}, #{proxyUrl}, now())
+    </insert>
+
+</mapper>

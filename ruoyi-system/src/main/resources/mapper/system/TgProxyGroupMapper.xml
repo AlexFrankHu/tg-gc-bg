@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgProxyGroupMapper">
+
+    <resultMap type="TgProxyGroup" id="TgProxyGroupResult">
+        <result property="id"           column="id"            />
+        <result property="groupNo"      column="group_no"      />
+        <result property="title"        column="title"         />
+        <result property="country"      column="country"       />
+        <result property="expireTime"   column="expire_time"   />
+        <result property="maxBindable"  column="max_bindable"  />
+        <result property="totalCount"   column="total_count"   />
+        <result property="usedCount"    column="used_count"    />
+        <result property="unusedCount"  column="unused_count"  />
+        <result property="disabledCount" column="disabled_count" />
+        <result property="importTime"   column="import_time"   />
+        <result property="createTime"   column="create_time"   />
+        <result property="updateTime"   column="update_time"   />
+    </resultMap>
+
+    <sql id="selectVo">
+        select g.id, g.group_no, g.title, g.country, g.expire_time, g.max_bindable, g.total_count, g.import_time, g.create_time, g.update_time,
+        (select count(*) from tg_proxy_ip p where p.group_no = g.group_no and p.current_bind_count > 0 and p.status != 'disabled') as used_count,
+        (select count(*) from tg_proxy_ip p where p.group_no = g.group_no and p.status = 'disabled') as disabled_count,
+        (g.total_count - (select count(*) from tg_proxy_ip p where p.group_no = g.group_no and p.current_bind_count > 0 and p.status != 'disabled') - (select count(*) from tg_proxy_ip p where p.group_no = g.group_no and p.status = 'disabled')) as unused_count
+        from tg_proxy_group g
+    </sql>
+
+    <select id="selectTgProxyGroupList" parameterType="TgProxyGroup" resultMap="TgProxyGroupResult">
+        <include refid="selectVo"/>
+        <where>
+            <if test="title != null and title != ''">
+                AND g.title like concat('%', #{title}, '%')
+            </if>
+            <if test="country != null and country != ''">
+                AND g.country = #{country}
+            </if>
+        </where>
+        order by g.id desc
+    </select>
+
+    <select id="selectAllGroups" resultMap="TgProxyGroupResult">
+        <include refid="selectVo"/>
+        order by g.id desc
+    </select>
+
+    <select id="selectTgProxyGroupById" parameterType="Integer" resultMap="TgProxyGroupResult">
+        <include refid="selectVo"/>
+        where g.id = #{id}
+    </select>
+
+    <select id="selectTgProxyGroupByGroupNo" parameterType="String" resultMap="TgProxyGroupResult">
+        <include refid="selectVo"/>
+        where g.group_no = #{groupNo}
+    </select>
+
+    <insert id="insertTgProxyGroup" parameterType="TgProxyGroup" useGeneratedKeys="true" keyProperty="id">
+        insert into tg_proxy_group (group_no, title, country, expire_time, max_bindable, total_count, import_time)
+        values (#{groupNo}, #{title}, #{country}, #{expireTime}, #{maxBindable}, #{totalCount}, #{importTime})
+    </insert>
+
+    <update id="updateTgProxyGroup" parameterType="TgProxyGroup">
+        update tg_proxy_group
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="title != null">title = #{title},</if>
+            <if test="country != null">country = #{country},</if>
+            <if test="expireTime != null">expire_time = #{expireTime},</if>
+            <if test="maxBindable != null">max_bindable = #{maxBindable},</if>
+            <if test="totalCount != null">total_count = #{totalCount},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteTgProxyGroupByIds" parameterType="String">
+        delete from tg_proxy_group where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

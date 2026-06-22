@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgChatMessageMapper">
+
+    <resultMap type="TgChatMessage" id="TgChatMessageResult">
+        <result property="id"              column="id"               />
+        <result property="tgAccountId"     column="tg_account_id"    />
+        <result property="chatId"          column="chat_id"          />
+        <result property="messageId"       column="message_id"       />
+        <result property="senderUserId"    column="sender_user_id"   />
+        <result property="senderChatId"    column="sender_chat_id"   />
+        <result property="senderName"      column="sender_name"      />
+        <result property="isOutgoing"      column="is_outgoing"      />
+        <result property="sendTime"        column="send_time"        />
+        <result property="contentType"     column="content_type"     />
+        <result property="textContent"     column="text_content"     />
+        <result property="mediaFileId"     column="media_file_id"    />
+        <result property="mediaFileSize"   column="media_file_size"  />
+        <result property="mediaMimeType"   column="media_mime_type"  />
+        <result property="mediaFileName"   column="media_file_name"  />
+        <result property="mediaDuration"   column="media_duration"   />
+        <result property="mediaWidth"      column="media_width"      />
+        <result property="mediaHeight"     column="media_height"     />
+        <result property="thumbnailFileId" column="thumbnail_file_id"/>
+        <result property="createTime"      column="create_time"      />
+    </resultMap>
+
+    <sql id="selectTgChatMessageVo">
+        select id, tg_account_id, chat_id, message_id, sender_user_id, sender_chat_id,
+               sender_name, is_outgoing, send_time, content_type, text_content,
+               media_file_id, media_file_size, media_mime_type, media_file_name,
+               media_duration, media_width, media_height, thumbnail_file_id, create_time
+        from tg_chat_message
+    </sql>
+
+    <select id="selectTgChatMessageById" parameterType="Long" resultMap="TgChatMessageResult">
+        <include refid="selectTgChatMessageVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectTgChatMessageList" parameterType="TgChatMessage" resultMap="TgChatMessageResult">
+        <include refid="selectTgChatMessageVo"/>
+        <where>
+            <if test="tgAccountId != null">
+                AND tg_account_id = #{tgAccountId}
+            </if>
+            <if test="chatId != null">
+                AND chat_id = #{chatId}
+            </if>
+            <if test="senderUserId != null">
+                AND sender_user_id = #{senderUserId}
+            </if>
+            <if test="contentType != null and contentType != ''">
+                AND content_type = #{contentType}
+            </if>
+            <if test="textContent != null and textContent != ''">
+                AND text_content like concat('%', #{textContent}, '%')
+            </if>
+            <if test="isOutgoing != null">
+                AND is_outgoing = #{isOutgoing}
+            </if>
+            <if test="params.beginSendTime != null and params.beginSendTime != ''">
+                AND send_time &gt;= #{params.beginSendTime}
+            </if>
+            <if test="params.endSendTime != null and params.endSendTime != ''">
+                AND send_time &lt;= #{params.endSendTime}
+            </if>
+        </where>
+        order by send_time desc
+    </select>
+
+    <insert id="insertTgChatMessage" parameterType="TgChatMessage" useGeneratedKeys="true" keyProperty="id">
+        insert into tg_chat_message
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="tgAccountId != null">tg_account_id,</if>
+            <if test="chatId != null">chat_id,</if>
+            <if test="messageId != null">message_id,</if>
+            <if test="senderUserId != null">sender_user_id,</if>
+            <if test="senderChatId != null">sender_chat_id,</if>
+            <if test="senderName != null">sender_name,</if>
+            <if test="isOutgoing != null">is_outgoing,</if>
+            <if test="sendTime != null">send_time,</if>
+            <if test="contentType != null">content_type,</if>
+            <if test="textContent != null">text_content,</if>
+            <if test="mediaFileId != null">media_file_id,</if>
+            <if test="mediaFileSize != null">media_file_size,</if>
+            <if test="mediaMimeType != null">media_mime_type,</if>
+            <if test="mediaFileName != null">media_file_name,</if>
+            <if test="mediaDuration != null">media_duration,</if>
+            <if test="mediaWidth != null">media_width,</if>
+            <if test="mediaHeight != null">media_height,</if>
+            <if test="thumbnailFileId != null">thumbnail_file_id,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="tgAccountId != null">#{tgAccountId},</if>
+            <if test="chatId != null">#{chatId},</if>
+            <if test="messageId != null">#{messageId},</if>
+            <if test="senderUserId != null">#{senderUserId},</if>
+            <if test="senderChatId != null">#{senderChatId},</if>
+            <if test="senderName != null">#{senderName},</if>
+            <if test="isOutgoing != null">#{isOutgoing},</if>
+            <if test="sendTime != null">#{sendTime},</if>
+            <if test="contentType != null">#{contentType},</if>
+            <if test="textContent != null">#{textContent},</if>
+            <if test="mediaFileId != null">#{mediaFileId},</if>
+            <if test="mediaFileSize != null">#{mediaFileSize},</if>
+            <if test="mediaMimeType != null">#{mediaMimeType},</if>
+            <if test="mediaFileName != null">#{mediaFileName},</if>
+            <if test="mediaDuration != null">#{mediaDuration},</if>
+            <if test="mediaWidth != null">#{mediaWidth},</if>
+            <if test="mediaHeight != null">#{mediaHeight},</if>
+            <if test="thumbnailFileId != null">#{thumbnailFileId},</if>
+        </trim>
+    </insert>
+
+    <update id="updateTgChatMessage" parameterType="TgChatMessage">
+        update tg_chat_message
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="senderName != null">sender_name = #{senderName},</if>
+            <if test="textContent != null">text_content = #{textContent},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteTgChatMessageById" parameterType="Long">
+        delete from tg_chat_message where id = #{id}
+    </delete>
+
+    <delete id="deleteTgChatMessageByIds" parameterType="Long">
+        delete from tg_chat_message where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

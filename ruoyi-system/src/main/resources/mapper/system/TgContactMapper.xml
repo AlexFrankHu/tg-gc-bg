@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgContactMapper">
+
+    <resultMap type="TgContact" id="TgContactResult">
+        <result property="id"              column="id"               />
+        <result property="tgAccountId"     column="tg_account_id"    />
+        <result property="userId"          column="user_id"          />
+        <result property="firstName"       column="first_name"       />
+        <result property="lastName"        column="last_name"        />
+        <result property="nickname"        column="nickname"         />
+        <result property="username"        column="username"         />
+        <result property="phoneNumber"     column="phone_number"     />
+        <result property="isMutual"        column="is_mutual"        />
+        <result property="isBot"           column="is_bot"           />
+        <result property="isPremium"       column="is_premium"       />
+        <result property="isVerified"      column="is_verified"      />
+        <result property="userType"        column="user_type"        />
+        <result property="restrictionReason" column="restriction_reason" />
+        <result property="bio"             column="bio"              />
+        <result property="photoSmallFileId" column="photo_small_file_id" />
+        <result property="photoBigFileId"  column="photo_big_file_id" />
+        <result property="lastOnlineTime"  column="last_online_time" />
+        <result property="lastSendTime"    column="last_send_time"   />
+        <result property="lastReceiveTime" column="last_receive_time"/>
+        <result property="autoReply"       column="auto_reply"       />
+        <result property="totalMsgCount"  column="total_msg_count"  />
+        <result property="accountSentCount" column="account_sent_count" />
+        <result property="friendSentCount" column="friend_sent_count" />
+        <result property="createTime"      column="create_time"      />
+        <result property="updateTime"      column="update_time"      />
+    </resultMap>
+
+    <sql id="selectTgContactVo">
+        select id, tg_account_id, user_id, first_name, last_name, nickname, username,
+               phone_number, is_mutual, is_bot, is_premium, is_verified, user_type,
+               restriction_reason, bio, photo_small_file_id, photo_big_file_id,
+               last_online_time, last_send_time, last_receive_time, auto_reply,
+               total_msg_count, account_sent_count, friend_sent_count, create_time, update_time
+        from tg_contact
+    </sql>
+
+    <select id="selectTgContactById" parameterType="Integer" resultMap="TgContactResult">
+        <include refid="selectTgContactVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectTgContactList" parameterType="TgContact" resultMap="TgContactResult">
+        <include refid="selectTgContactVo"/>
+        <where>
+            <if test="tgAccountId != null">
+                AND tg_account_id = #{tgAccountId}
+            </if>
+            <if test="nickname != null and nickname != ''">
+                AND nickname like concat('%', #{nickname}, '%')
+            </if>
+            <if test="username != null and username != ''">
+                AND username like concat('%', #{username}, '%')
+            </if>
+            <if test="phoneNumber != null and phoneNumber != ''">
+                AND phone_number like concat('%', #{phoneNumber}, '%')
+            </if>
+            <if test="userType != null and userType != ''">
+                AND user_type = #{userType}
+            </if>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="accountPhone != null and accountPhone != ''">
+                AND tg_account_id IN (SELECT id FROM tg_telethon_account WHERE phone LIKE concat('%', #{accountPhone}, '%'))
+            </if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != ''">
+                AND create_time &gt;= #{params.beginCreateTime}
+            </if>
+            <if test="params.endCreateTime != null and params.endCreateTime != ''">
+                AND create_time &lt;= #{params.endCreateTime}
+            </if>
+        </where>
+        order by update_time desc
+    </select>
+
+    <insert id="insertTgContact" parameterType="TgContact" useGeneratedKeys="true" keyProperty="id">
+        insert into tg_contact
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="tgAccountId != null">tg_account_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="firstName != null">first_name,</if>
+            <if test="lastName != null">last_name,</if>
+            <if test="nickname != null">nickname,</if>
+            <if test="username != null">username,</if>
+            <if test="phoneNumber != null">phone_number,</if>
+            <if test="isMutual != null">is_mutual,</if>
+            <if test="isBot != null">is_bot,</if>
+            <if test="isPremium != null">is_premium,</if>
+            <if test="isVerified != null">is_verified,</if>
+            <if test="userType != null">user_type,</if>
+            <if test="restrictionReason != null">restriction_reason,</if>
+            <if test="bio != null">bio,</if>
+            <if test="photoSmallFileId != null">photo_small_file_id,</if>
+            <if test="photoBigFileId != null">photo_big_file_id,</if>
+            <if test="lastOnlineTime != null">last_online_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="tgAccountId != null">#{tgAccountId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="firstName != null">#{firstName},</if>
+            <if test="lastName != null">#{lastName},</if>
+            <if test="nickname != null">#{nickname},</if>
+            <if test="username != null">#{username},</if>
+            <if test="phoneNumber != null">#{phoneNumber},</if>
+            <if test="isMutual != null">#{isMutual},</if>
+            <if test="isBot != null">#{isBot},</if>
+            <if test="isPremium != null">#{isPremium},</if>
+            <if test="isVerified != null">#{isVerified},</if>
+            <if test="userType != null">#{userType},</if>
+            <if test="restrictionReason != null">#{restrictionReason},</if>
+            <if test="bio != null">#{bio},</if>
+            <if test="photoSmallFileId != null">#{photoSmallFileId},</if>
+            <if test="photoBigFileId != null">#{photoBigFileId},</if>
+            <if test="lastOnlineTime != null">#{lastOnlineTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateTgContact" parameterType="TgContact">
+        update tg_contact
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="username != null">username = #{username},</if>
+            <if test="phoneNumber != null">phone_number = #{phoneNumber},</if>
+            <if test="isMutual != null">is_mutual = #{isMutual},</if>
+            <if test="isBot != null">is_bot = #{isBot},</if>
+            <if test="isPremium != null">is_premium = #{isPremium},</if>
+            <if test="isVerified != null">is_verified = #{isVerified},</if>
+            <if test="userType != null">user_type = #{userType},</if>
+            <if test="bio != null">bio = #{bio},</if>
+            <if test="autoReply != null">auto_reply = #{autoReply},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteTgContactById" parameterType="Integer">
+        delete from tg_contact where id = #{id}
+    </delete>
+
+    <delete id="deleteTgContactByIds" parameterType="Integer">
+        delete from tg_contact where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="updateAutoReplyById">
+        update tg_contact set auto_reply = #{autoReply} where id = #{id}
+    </update>
+
+    <update id="updateAllAutoReply">
+        update tg_contact set auto_reply = #{autoReply}
+    </update>
+
+</mapper>

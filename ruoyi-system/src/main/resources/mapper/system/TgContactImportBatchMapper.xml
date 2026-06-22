@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgContactImportBatchMapper">
+
+    <resultMap type="TgContactImportBatch" id="TgContactImportBatchResult">
+        <result property="id"           column="id"           />
+        <result property="batchNo"      column="batch_no"     />
+        <result property="title"        column="title"        />
+        <result property="importType"   column="import_type"  />
+        <result property="fileName"     column="file_name"    />
+        <result property="totalCount"   column="total_count"  />
+        <result property="usedCount"    column="used_count"   />
+        <result property="waitingCount" column="waiting_count"/>
+        <result property="invalidCount" column="invalid_count"/>
+        <result property="importTime"   column="import_time"  />
+        <result property="createTime"   column="create_time"  />
+        <result property="updateTime"   column="update_time"  />
+    </resultMap>
+
+    <sql id="selectVo">
+        select id, batch_no, title, import_type, file_name, total_count, used_count, waiting_count, invalid_count, import_time, create_time, update_time
+        from tg_contact_import_batch
+    </sql>
+
+    <select id="selectById" parameterType="Integer" resultMap="TgContactImportBatchResult">
+        <include refid="selectVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectByBatchNo" parameterType="String" resultMap="TgContactImportBatchResult">
+        <include refid="selectVo"/>
+        where batch_no = #{batchNo}
+    </select>
+
+    <select id="selectList" parameterType="TgContactImportBatch" resultMap="TgContactImportBatchResult">
+        <include refid="selectVo"/>
+        <where>
+            <if test="batchNo != null and batchNo != ''">
+                AND batch_no = #{batchNo}
+            </if>
+            <if test="title != null and title != ''">
+                AND title like concat('%', #{title}, '%')
+            </if>
+            <if test="importType != null and importType != ''">
+                AND import_type = #{importType}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <insert id="insert" parameterType="TgContactImportBatch" useGeneratedKeys="true" keyProperty="id">
+        insert into tg_contact_import_batch (batch_no, title, import_type, file_name, total_count, import_time, create_time)
+        values (#{batchNo}, #{title}, #{importType}, #{fileName}, #{totalCount}, #{importTime}, now())
+    </insert>
+
+    <update id="update" parameterType="TgContactImportBatch">
+        update tg_contact_import_batch
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="title != null">title = #{title},</if>
+            <if test="totalCount != null">total_count = #{totalCount},</if>
+            update_time = now(),
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteByIds" parameterType="String">
+        delete from tg_contact_import_batch where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="refreshStats" parameterType="String">
+        UPDATE tg_contact_import_batch b SET
+            used_count = (
+                SELECT COUNT(*) FROM tg_contact_assign_log
+                WHERE contact_batch_no = #{batchNo} AND (status = 'success' OR status = 'skipped')
+            ),
+            waiting_count = (
+                SELECT COUNT(*) FROM tg_contact_assign_log
+                WHERE contact_batch_no = #{batchNo} AND status = 'pending'
+            ),
+            invalid_count = (
+                SELECT COUNT(*) FROM tg_contact_assign_log
+                WHERE contact_batch_no = #{batchNo} AND status = 'failed'
+            ),
+            update_time = NOW()
+        WHERE b.batch_no = #{batchNo}
+    </update>
+
+</mapper>

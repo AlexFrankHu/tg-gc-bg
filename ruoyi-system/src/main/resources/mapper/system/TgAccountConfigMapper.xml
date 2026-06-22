@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgAccountConfigMapper">
+
+    <resultMap type="TgAccountConfig" id="TgAccountConfigResult">
+        <result property="id"              column="id"               />
+        <result property="tgUserId"        column="tg_user_id"       />
+        <result property="nickname"        column="nickname"         />
+        <result property="username"        column="username"         />
+        <result property="customUsername"   column="custom_username"  />
+        <result property="noticeFlag"      column="notice_flag"      />
+        <result property="phoneNum"        column="phone_num"        />
+        <result property="loginStatus"     column="login_status"     />
+        <result property="apiId"           column="api_id"           />
+        <result property="apiHash"         column="api_hash"         />
+        <result property="deviceModel"     column="device_model"     />
+        <result property="systemVersion"   column="system_version"   />
+        <result property="appVersion"      column="app_version"      />
+        <result property="systemLanguageCode" column="system_language_code" />
+        <result property="twoFaPassword"   column="two_fa_password"  />
+        <result property="lastOnlineTime"  column="last_online_time" />
+    </resultMap>
+
+    <sql id="selectTgAccountConfigVo">
+        select id, tg_user_id, nickname, username, custom_username, notice_flag, phone_num, login_status, api_id, api_hash, device_model, system_version, app_version, system_language_code, two_fa_password, last_online_time
+        from tg_account_config
+    </sql>
+
+    <select id="selectTgAccountConfigById" parameterType="Integer" resultMap="TgAccountConfigResult">
+        <include refid="selectTgAccountConfigVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectTgAccountConfigList" parameterType="TgAccountConfig" resultMap="TgAccountConfigResult">
+        <include refid="selectTgAccountConfigVo"/>
+        <where>
+            <if test="phoneNum != null and phoneNum != ''">
+                AND phone_num like concat('%', #{phoneNum}, '%')
+            </if>
+            <if test="customUsername != null and customUsername != ''">
+                AND custom_username like concat('%', #{customUsername}, '%')
+            </if>
+            <if test="loginStatus != null">
+                AND login_status = #{loginStatus}
+            </if>
+            <if test="tgUserId != null">
+                AND tg_user_id = #{tgUserId}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <insert id="insertTgAccountConfig" parameterType="TgAccountConfig" useGeneratedKeys="true" keyProperty="id">
+        insert into tg_account_config
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="tgUserId != null">tg_user_id,</if>
+            <if test="nickname != null and nickname != ''">nickname,</if>
+            <if test="username != null and username != ''">username,</if>
+            <if test="customUsername != null and customUsername != ''">custom_username,</if>
+            <if test="noticeFlag != null">notice_flag,</if>
+            <if test="phoneNum != null and phoneNum != ''">phone_num,</if>
+            <if test="loginStatus != null">login_status,</if>
+            <if test="apiId != null">api_id,</if>
+            <if test="apiHash != null and apiHash != ''">api_hash,</if>
+            <if test="deviceModel != null and deviceModel != ''">device_model,</if>
+            <if test="systemVersion != null and systemVersion != ''">system_version,</if>
+            <if test="appVersion != null and appVersion != ''">app_version,</if>
+            <if test="systemLanguageCode != null and systemLanguageCode != ''">system_language_code,</if>
+            <if test="twoFaPassword != null and twoFaPassword != ''">two_fa_password,</if>
+            <if test="lastOnlineTime != null">last_online_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="tgUserId != null">#{tgUserId},</if>
+            <if test="nickname != null and nickname != ''">#{nickname},</if>
+            <if test="username != null and username != ''">#{username},</if>
+            <if test="customUsername != null and customUsername != ''">#{customUsername},</if>
+            <if test="noticeFlag != null">#{noticeFlag},</if>
+            <if test="phoneNum != null and phoneNum != ''">#{phoneNum},</if>
+            <if test="loginStatus != null">#{loginStatus},</if>
+            <if test="apiId != null">#{apiId},</if>
+            <if test="apiHash != null and apiHash != ''">#{apiHash},</if>
+            <if test="deviceModel != null and deviceModel != ''">#{deviceModel},</if>
+            <if test="systemVersion != null and systemVersion != ''">#{systemVersion},</if>
+            <if test="appVersion != null and appVersion != ''">#{appVersion},</if>
+            <if test="systemLanguageCode != null and systemLanguageCode != ''">#{systemLanguageCode},</if>
+            <if test="twoFaPassword != null and twoFaPassword != ''">#{twoFaPassword},</if>
+            <if test="lastOnlineTime != null">#{lastOnlineTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateTgAccountConfig" parameterType="TgAccountConfig">
+        update tg_account_config
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="tgUserId != null">tg_user_id = #{tgUserId},</if>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="username != null">username = #{username},</if>
+            <if test="customUsername != null">custom_username = #{customUsername},</if>
+            <if test="noticeFlag != null">notice_flag = #{noticeFlag},</if>
+            <if test="phoneNum != null and phoneNum != ''">phone_num = #{phoneNum},</if>
+            <if test="loginStatus != null">login_status = #{loginStatus},</if>
+            <if test="apiId != null">api_id = #{apiId},</if>
+            <if test="apiHash != null">api_hash = #{apiHash},</if>
+            <if test="deviceModel != null">device_model = #{deviceModel},</if>
+            <if test="systemVersion != null">system_version = #{systemVersion},</if>
+            <if test="appVersion != null">app_version = #{appVersion},</if>
+            <if test="systemLanguageCode != null">system_language_code = #{systemLanguageCode},</if>
+            <if test="twoFaPassword != null">two_fa_password = #{twoFaPassword},</if>
+            <if test="lastOnlineTime != null">last_online_time = #{lastOnlineTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteTgAccountConfigById" parameterType="Integer">
+        delete from tg_account_config where id = #{id}
+    </delete>
+
+    <delete id="deleteTgAccountConfigByIds" parameterType="Integer">
+        delete from tg_account_config where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

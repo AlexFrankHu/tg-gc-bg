@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgImportAccountMapper">
+
+    <resultMap type="TgImportAccount" id="TgImportAccountResult">
+        <result property="id"              column="id"               />
+        <result property="batchNo"         column="batch_no"         />
+        <result property="phone"           column="phone"            />
+        <result property="status"          column="status"           />
+        <result property="reason"          column="reason"           />
+        <result property="tgUserId"        column="tg_user_id"       />
+        <result property="nickname"        column="nickname"         />
+        <result property="username"        column="username"         />
+        <result property="loginTime"       column="login_time"       />
+        <result property="createTime"      column="create_time"      />
+        <result property="updateTime"      column="update_time"      />
+    </resultMap>
+
+    <sql id="selectTgImportAccountVo">
+        select id, batch_no, phone, status, reason, tg_user_id, nickname, username, login_time, create_time, update_time
+        from tg_import_account
+    </sql>
+
+    <select id="selectTgImportAccountById" parameterType="Integer" resultMap="TgImportAccountResult">
+        <include refid="selectTgImportAccountVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectTgImportAccountList" parameterType="TgImportAccount" resultMap="TgImportAccountResult">
+        <include refid="selectTgImportAccountVo"/>
+        <where>
+            <if test="batchNo != null and batchNo != ''">
+                AND batch_no = #{batchNo}
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone like concat('%', #{phone}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectTgImportAccountByBatchNo" parameterType="String" resultMap="TgImportAccountResult">
+        <include refid="selectTgImportAccountVo"/>
+        where batch_no = #{batchNo}
+        order by id asc
+    </select>
+
+    <insert id="insertTgImportAccount" parameterType="TgImportAccount" useGeneratedKeys="true" keyProperty="id">
+        insert into tg_import_account (batch_no, phone, status, create_time)
+        values (#{batchNo}, #{phone}, #{status}, now())
+    </insert>
+
+    <insert id="batchInsertTgImportAccount" parameterType="java.util.List">
+        insert into tg_import_account (batch_no, phone, status, create_time) values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.batchNo}, #{item.phone}, #{item.status}, now())
+        </foreach>
+    </insert>
+
+    <update id="updateTgImportAccount" parameterType="TgImportAccount">
+        update tg_import_account
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="status != null and status != ''">status = #{status},</if>
+            <if test="reason != null">reason = #{reason},</if>
+            <if test="tgUserId != null">tg_user_id = #{tgUserId},</if>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="username != null">username = #{username},</if>
+            <if test="loginTime != null">login_time = #{loginTime},</if>
+            update_time = now(),
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteTgImportAccountById" parameterType="Integer">
+        delete from tg_import_account where id = #{id}
+    </delete>
+
+    <delete id="deleteTgImportAccountByBatchNo" parameterType="String">
+        delete from tg_import_account where batch_no = #{batchNo}
+    </delete>
+
+    <update id="syncStatusFromTelethonAccount">
+        UPDATE tg_import_account ia
+        INNER JOIN tg_telethon_account ta ON ia.phone = ta.phone
+        SET ia.status = CASE
+                WHEN ta.status = 'online' THEN 'success'
+                WHEN ta.status = 'banned' THEN 'banned'
+                WHEN ta.status = 'failed' THEN 'failed'
+                WHEN ta.status = 'waiting' THEN 'waiting'
+                ELSE 'waiting'
+            END,
+            ia.tg_user_id = ta.tg_user_id,
+            ia.nickname = ta.nickname,
+            ia.username = ta.username,
+            ia.update_time = now()
+        <where>
+            <if test="batchNo != null and batchNo != ''">
+                AND ia.batch_no = #{batchNo}
+            </if>
+        </where>
+    </update>
+
+</mapper>

@@ -47,7 +47,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <sql id="selectTgTelethonAccountVo">
         select a.id, a.phone, a.api_id, a.api_hash, a.tg_user_id, a.nickname, a.username, a.country, a.device_model, a.system_version, a.app_version, a.lang_code, a.system_lang_code, a.batch_no, a.status, a.proxy_ip_id, a.proxy_group_no, a.proxy_url, a.proxy_protocol, a.proxy_host, a.proxy_port, a.proxy_username, a.proxy_password, a.auto_reply, a.is_restricted, a.total_msg_count, a.sent_msg_count, a.recv_msg_count, a.node_id, a.json_content, a.last_login_time, a.create_time, a.update_time,
         b.title as batchTitle,
-        pg.title as proxyGroupTitle
+        pg.group_name as proxyGroupTitle
         from tg_telethon_account a
         left join tg_import_batch b on a.batch_no = b.batch_no
         left join tg_proxy_group pg on a.proxy_group_no = pg.group_no

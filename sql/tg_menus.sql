@@ -42,6 +42,9 @@ VALUES (2009, '代理IP', 2000, 9, 'proxyIp', 'tg/proxyIp/index', 1, 0, 'C', '0'
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, remark)
 VALUES (2010, '操作日志', 2000, 10, 'log', 'tg/log/index', 1, 0, 'C', '0', '0', 'tg:log:list', 'log', 'admin', sysdate(), '');
 
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, remark)
+VALUES (2011, '节点信息', 2000, 0, 'node', 'tg/node/index', 1, 0, 'C', '0', '0', 'tg:node:list', 'monitor', 'admin', sysdate(), '集群节点信息');
+
 -- 3. Button permissions for account page
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, remark)
 VALUES (2101, '账号查询', 2001, 1, '#', '', 1, 0, 'F', '0', '0', 'tg:account:query', '#', 'admin', sysdate(), '');
@@ -53,6 +56,12 @@ INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component,
 VALUES (2104, '账号删除', 2001, 4, '#', '', 1, 0, 'F', '0', '0', 'tg:account:remove', '#', 'admin', sysdate(), '');
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, remark)
 VALUES (2105, '账号导出', 2001, 5, '#', '', 1, 0, 'F', '0', '0', 'tg:account:export', '#', 'admin', sysdate(), '');
+
+-- Button permissions for node page
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, remark)
+VALUES (2111, '节点查询', 2011, 1, '#', '', 1, 0, 'F', '0', '0', 'tg:node:query', '#', 'admin', sysdate(), '');
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, remark)
+VALUES (2112, '节点修改', 2011, 2, '#', '', 1, 0, 'F', '0', '0', 'tg:node:edit', '#', 'admin', sysdate(), '');
 
 -- 4. Assign all TG menus to admin role (role_id=1)
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2000);
@@ -71,3 +80,6 @@ INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2102);
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2103);
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2104);
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2105);
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2011);
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2111);
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2112);

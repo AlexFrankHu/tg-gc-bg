@@ -600,6 +600,7 @@ public class TgImportController extends BaseController
                 }
                 logEntry.setStatus("pending");
                 logEntry.setRetryCount(0);
+                logEntry.setAddMethod(addMethod);
 
                 contactAssignLogMapper.insert(logEntry);
                 totalAssigned++;

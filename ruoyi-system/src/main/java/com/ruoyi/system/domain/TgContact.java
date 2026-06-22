@@ -59,6 +59,9 @@ public class TgContact extends BaseEntity
     private Date updateTime;
 
     // Getters and Setters
+    /** 账号所属节点ID */
+    private String nodeId;
+
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
     public Integer getTgAccountId() { return tgAccountId; }
@@ -113,4 +116,7 @@ public class TgContact extends BaseEntity
     public void setUpdateTime(Date updateTime) { this.updateTime = updateTime; }
     public String getAccountPhone() { return accountPhone; }
     public void setAccountPhone(String accountPhone) { this.accountPhone = accountPhone; }
+
+    public String getNodeId() { return nodeId; }
+    public void setNodeId(String nodeId) { this.nodeId = nodeId; }
 }

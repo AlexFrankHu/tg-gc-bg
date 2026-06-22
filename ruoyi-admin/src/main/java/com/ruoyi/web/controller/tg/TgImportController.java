@@ -22,11 +22,13 @@ import com.ruoyi.system.domain.TgTelethonAccount;
 import com.ruoyi.system.domain.TgContactImportBatch;
 import com.ruoyi.system.domain.TgContactImportRecord;
 import com.ruoyi.system.domain.TgContactAssignLog;
+import com.ruoyi.system.domain.TgClusterNode;
 import com.ruoyi.system.service.ITgImportBatchService;
 import com.ruoyi.system.service.ITgImportAccountService;
 import com.ruoyi.system.service.ITgTelethonAccountService;
 import com.ruoyi.system.service.ITgContactImportBatchService;
 import com.ruoyi.system.service.ITgContactImportRecordService;
+import com.ruoyi.system.service.ITgClusterNodeService;
 import com.ruoyi.system.mapper.TgContactImportBatchMapper;
 import com.ruoyi.system.mapper.TgContactAssignLogMapper;
 import com.ruoyi.system.mapper.TgContactMapper;
@@ -88,6 +90,9 @@ public class TgImportController extends BaseController
 
     @Autowired
     private TgAutoReplyLogMapper autoReplyLogMapper;
+
+    @Autowired
+    private ITgClusterNodeService clusterNodeService;
 
     /**
      * 查询导入批次列表（逆序）
@@ -163,19 +168,6 @@ public class TgImportController extends BaseController
             return error("仅支持zip格式文件");
         }
 
-        // Determine account directory
-        String targetDir = accountDir;
-        if (targetDir == null || targetDir.isEmpty())
-        {
-            return error("未配置account目录路径");
-        }
-
-        File accountPath = new File(targetDir);
-        if (!accountPath.exists())
-        {
-            accountPath.mkdirs();
-        }
-
         Path tempDir = null;
         try
         {
@@ -227,14 +219,14 @@ public class TgImportController extends BaseController
                     continue;
                 }
 
-                // Copy to account/ root directory
+                // Read file contents for DB storage
+                String jsonContentStr = null;
+                byte[] sessionContentBytes = null;
                 if (jsonPath != null)
                 {
-                    Files.copy(jsonPath, accountPath.toPath().resolve(phone + ".json"),
-                            StandardCopyOption.REPLACE_EXISTING);
+                    jsonContentStr = Files.readString(jsonPath, StandardCharsets.UTF_8);
                 }
-                Files.copy(sessionPath, accountPath.toPath().resolve(phone + ".session"),
-                        StandardCopyOption.REPLACE_EXISTING);
+                sessionContentBytes = Files.readAllBytes(sessionPath);
 
                 // Create import account record
                 TgImportAccount importAccount = new TgImportAccount();
@@ -243,8 +235,13 @@ public class TgImportController extends BaseController
                 importAccount.setStatus("waiting");
                 importAccountList.add(importAccount);
 
-                // Insert into tg_telethon_account with status 'waiting' and batch_no
-                telethonAccountService.insertWaitingAccount(phone, batchNo);
+                // Insert into tg_telethon_account with status 'waiting', batch_no, and file contents
+                TgTelethonAccount newAccount = new TgTelethonAccount();
+                newAccount.setPhone(phone);
+                newAccount.setBatchNo(batchNo);
+                newAccount.setJsonContent(jsonContentStr);
+                newAccount.setSessionContent(sessionContentBytes);
+                telethonAccountService.insertWaitingAccount(newAccount);
             }
 
             if (importAccountList.isEmpty())
@@ -615,91 +612,7 @@ public class TgImportController extends BaseController
         Map<String, Object> data = new HashMap<>();
         data.put("totalAssigned", totalAssigned);
 
-        // If batch_import mode, call Telethon batch import endpoint
-        if ("batch_import".equals(addMethod) && totalAssigned > 0)
-        {
-            int batchImported = 0;
-            int batchFailed = 0;
-            for (Map.Entry<TgTelethonAccount, List<TgContactImportRecord>> entry : assignments.entrySet())
-            {
-                TgTelethonAccount acc = entry.getKey();
-                List<TgContactImportRecord> records = entry.getValue();
-                if (records.isEmpty()) continue;
-
-                try
-                {
-                    // Build request body for Telethon batch import
-                    Map<String, Object> batchReq = new HashMap<>();
-                    batchReq.put("accountId", acc.getId());
-                    batchReq.put("accountPhone", acc.getPhone());
-                    batchReq.put("importType", importType);
-                    batchReq.put("contactBatchNo", contactBatchNo);
-
-                    List<Map<String, String>> contactList = new ArrayList<>();
-                    for (TgContactImportRecord r : records)
-                    {
-                        Map<String, String> c = new HashMap<>();
-                        if ("username".equals(importType))
-                        {
-                            c.put("username", r.getUsername());
-                        }
-                        else
-                        {
-                            c.put("phone", r.getPhone());
-                        }
-                        contactList.add(c);
-                    }
-                    batchReq.put("contacts", contactList);
-
-                    ObjectMapper om = new ObjectMapper();
-                    String jsonBody = om.writeValueAsString(batchReq);
-
-                    URL url = new URL(telethonUrl + "/api/contacts/batch_import");
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("POST");
-                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                    conn.setDoOutput(true);
-                    conn.setConnectTimeout(120000);
-                    conn.setReadTimeout(120000);
-
-                    try (OutputStream os = conn.getOutputStream())
-                    {
-                        os.write(jsonBody.getBytes(StandardCharsets.UTF_8));
-                    }
-
-                    int respCode = conn.getResponseCode();
-                    if (respCode == 200)
-                    {
-                        String respBody = new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-                        Map<String, Object> respData = om.readValue(respBody, Map.class);
-                        int imported = respData.get("imported") != null ? Integer.parseInt(respData.get("imported").toString()) : 0;
-                        int failed = respData.get("failed") != null ? Integer.parseInt(respData.get("failed").toString()) : 0;
-                        batchImported += imported;
-                        batchFailed += failed;
-                        log.info("Batch import for account {}: imported={}, failed={}", acc.getPhone(), imported, failed);
-                    }
-                    else
-                    {
-                        log.warn("Batch import for account {} returned status {}", acc.getPhone(), respCode);
-                        batchFailed += records.size();
-                    }
-                }
-                catch (Exception e)
-                {
-                    log.error("Batch import for account {} error: {}", acc.getPhone(), e.getMessage());
-                    batchFailed += records.size();
-                }
-            }
-            // Refresh stats again after batch import
-            contactBatchMapper.refreshStats(contactBatchNo);
-            data.put("batchImported", batchImported);
-            data.put("batchFailed", batchFailed);
-            data.put("message", "联系人导入完成");
-        }
-        else
-        {
-            data.put("message", "好友已分配，待定时器自动添加");
-        }
+        data.put("message", "分配成功，等待添加");
 
         return success(data);
     }

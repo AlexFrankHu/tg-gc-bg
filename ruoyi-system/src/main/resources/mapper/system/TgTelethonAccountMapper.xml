@@ -33,6 +33,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="totalMsgCount"  column="total_msg_count"  />
         <result property="sentMsgCount"   column="sent_msg_count"   />
         <result property="recvMsgCount"   column="recv_msg_count"   />
+        <result property="nodeId"          column="node_id"          />
+        <result property="jsonContent"     column="json_content"     />
+        <result property="sessionContent"  column="session_content"  />
         <result property="isDeleted"       column="is_deleted"       />
         <result property="batchTitle"      column="batchTitle"       />
         <result property="proxyGroupTitle" column="proxyGroupTitle"  />
@@ -42,7 +45,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectTgTelethonAccountVo">
-        select a.id, a.phone, a.api_id, a.api_hash, a.tg_user_id, a.nickname, a.username, a.country, a.device_model, a.system_version, a.app_version, a.lang_code, a.system_lang_code, a.batch_no, a.status, a.proxy_ip_id, a.proxy_group_no, a.proxy_url, a.proxy_protocol, a.proxy_host, a.proxy_port, a.proxy_username, a.proxy_password, a.auto_reply, a.is_restricted, a.total_msg_count, a.sent_msg_count, a.recv_msg_count, a.last_login_time, a.create_time, a.update_time,
+        select a.id, a.phone, a.api_id, a.api_hash, a.tg_user_id, a.nickname, a.username, a.country, a.device_model, a.system_version, a.app_version, a.lang_code, a.system_lang_code, a.batch_no, a.status, a.proxy_ip_id, a.proxy_group_no, a.proxy_url, a.proxy_protocol, a.proxy_host, a.proxy_port, a.proxy_username, a.proxy_password, a.auto_reply, a.is_restricted, a.total_msg_count, a.sent_msg_count, a.recv_msg_count, a.node_id, a.json_content, a.last_login_time, a.create_time, a.update_time,
         b.title as batchTitle,
         pg.title as proxyGroupTitle
         from tg_telethon_account a
@@ -77,6 +80,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="batchNo != null and batchNo != ''">
                 AND a.batch_no = #{batchNo}
             </if>
+            <if test="nodeId != null and nodeId != ''">
+                AND a.node_id = #{nodeId}
+            </if>
         </where>
         order by a.id desc
     </select>
@@ -94,9 +100,34 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="proxyUsername != null">proxy_username = #{proxyUsername},</if>
             <if test="proxyPassword != null">proxy_password = #{proxyPassword},</if>
             <if test="autoReply != null">auto_reply = #{autoReply},</if>
+            <if test="nodeId != null">node_id = #{nodeId},</if>
             update_time = now(),
         </trim>
         where id = #{id}
+    </update>
+
+    <select id="selectUnassignedAccounts" resultMap="TgTelethonAccountResult">
+        select * from tg_telethon_account
+        where (node_id IS NULL OR node_id = '')
+          AND (is_deleted = 0 OR is_deleted IS NULL)
+        order by id
+    </select>
+
+    <update id="batchUpdateNodeId">
+        update tg_telethon_account set node_id = #{nodeId}, update_time = now()
+        where id = #{id}
+    </update>
+
+    <update id="updateStatusById">
+        update tg_telethon_account set status = #{status}, update_time = now() where id = #{id}
+    </update>
+
+    <update id="batchUpdateStatus">
+        update tg_telethon_account set status = #{status}, update_time = now()
+        where id in
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </update>
 
     <delete id="deleteTgTelethonAccountById" parameterType="Integer">
@@ -111,9 +142,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </update>
 
     <insert id="insertWaitingAccount">
-        INSERT INTO tg_telethon_account (phone, batch_no, status, is_deleted, create_time)
-        VALUES (#{phone}, #{batchNo}, 'waiting', 0, now())
-        ON DUPLICATE KEY UPDATE batch_no = #{batchNo}, status = 'waiting', is_deleted = 0, update_time = now()
+        INSERT INTO tg_telethon_account (phone, batch_no, status, is_deleted, node_id, json_content, session_content, create_time)
+        VALUES (#{phone}, #{batchNo}, 'waiting', 0, #{nodeId}, #{jsonContent}, #{sessionContent}, now())
+        ON DUPLICATE KEY UPDATE batch_no = #{batchNo}, status = 'waiting', is_deleted = 0, node_id = #{nodeId}, json_content = #{jsonContent}, session_content = #{sessionContent}, update_time = now()
     </insert>
 
     <update id="updateAccountProxy" parameterType="TgTelethonAccount">

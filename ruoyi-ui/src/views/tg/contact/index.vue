@@ -23,6 +23,9 @@
           <el-option label="已注销" value="deleted" />
         </el-select>
       </el-form-item>
+      <el-form-item label="节点ID" prop="nodeId">
+        <el-input v-model="queryParams.nodeId" placeholder="请输入节点ID" clearable style="width: 160px" @keyup.enter="handleQuery" />
+      </el-form-item>
       <el-form-item label="添加时间">
         <el-date-picker
           v-model="dateRange"
@@ -65,6 +68,7 @@
             {{ getAccountPhone(scope.row.tgAccountId) }}
           </template>
         </el-table-column>
+        <el-table-column label="账号节点" align="center" prop="nodeId" min-width="140" show-overflow-tooltip />
         <el-table-column label="TG用户ID" align="center" prop="userId" min-width="140" />
         <el-table-column label="昵称" align="center" prop="nickname" :show-overflow-tooltip="true" min-width="120" />
         <el-table-column label="用户名" align="center" prop="username" min-width="130">
@@ -285,6 +289,7 @@ const queryParams = ref({
   phoneNumber: undefined,
   userId: undefined,
   userType: undefined,
+  nodeId: undefined,
 });
 
 function getList() {

@@ -29,6 +29,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="totalMsgCount"  column="total_msg_count"  />
         <result property="accountSentCount" column="account_sent_count" />
         <result property="friendSentCount" column="friend_sent_count" />
+        <result property="nodeId"          column="node_id"          />
         <result property="createTime"      column="create_time"      />
         <result property="updateTime"      column="update_time"      />
     </resultMap>
@@ -38,7 +39,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                phone_number, is_mutual, is_bot, is_premium, is_verified, user_type,
                restriction_reason, bio, photo_small_file_id, photo_big_file_id,
                last_online_time, last_send_time, last_receive_time, auto_reply,
-               total_msg_count, account_sent_count, friend_sent_count, create_time, update_time
+               total_msg_count, account_sent_count, friend_sent_count, node_id, create_time, update_time
         from tg_contact
     </sql>
 
@@ -76,6 +77,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             </if>
             <if test="params.endCreateTime != null and params.endCreateTime != ''">
                 AND create_time &lt;= #{params.endCreateTime}
+            </if>
+            <if test="nodeId != null and nodeId != ''">
+                AND node_id = #{nodeId}
             </if>
         </where>
         order by update_time desc

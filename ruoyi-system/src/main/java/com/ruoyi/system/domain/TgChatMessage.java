@@ -38,6 +38,9 @@ public class TgChatMessage extends BaseEntity
     private Date createTime;
 
     // Getters and Setters
+    /** 账号所属节点ID */
+    private String nodeId;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Integer getTgAccountId() { return tgAccountId; }
@@ -78,4 +81,7 @@ public class TgChatMessage extends BaseEntity
     public void setThumbnailFileId(Integer thumbnailFileId) { this.thumbnailFileId = thumbnailFileId; }
     public Date getCreateTime() { return createTime; }
     public void setCreateTime(Date createTime) { this.createTime = createTime; }
+
+    public String getNodeId() { return nodeId; }
+    public void setNodeId(String nodeId) { this.nodeId = nodeId; }
 }

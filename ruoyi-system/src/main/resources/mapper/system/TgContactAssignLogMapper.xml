@@ -19,6 +19,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="retryCount"         column="retry_count"         />
         <result property="createTime"         column="create_time"         />
         <result property="accountStatus"    column="account_status"     />
+        <result property="nodeId"          column="node_id"          />
     </resultMap>
 
     <select id="selectList" parameterType="TgContactAssignLog" resultMap="TgContactAssignLogResult">

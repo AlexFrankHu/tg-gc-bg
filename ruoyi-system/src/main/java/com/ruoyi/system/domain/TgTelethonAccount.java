@@ -98,6 +98,15 @@ public class TgTelethonAccount extends BaseEntity
     /** 接收总数 */
     private Integer recvMsgCount;
 
+    /** 账号所属节点ID */
+    private String nodeId;
+
+    /** JSON文件内容 */
+    private String jsonContent;
+
+    /** Session文件内容(二进制) */
+    private byte[] sessionContent;
+
     /** 是否已删除 0-否 1-是 */
     private Integer isDeleted;
 
@@ -220,4 +229,13 @@ public class TgTelethonAccount extends BaseEntity
 
     public Date getUpdateTime() { return updateTime; }
     public void setUpdateTime(Date updateTime) { this.updateTime = updateTime; }
+
+    public String getNodeId() { return nodeId; }
+    public void setNodeId(String nodeId) { this.nodeId = nodeId; }
+
+    public String getJsonContent() { return jsonContent; }
+    public void setJsonContent(String jsonContent) { this.jsonContent = jsonContent; }
+
+    public byte[] getSessionContent() { return sessionContent; }
+    public void setSessionContent(byte[] sessionContent) { this.sessionContent = sessionContent; }
 }

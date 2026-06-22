@@ -92,7 +92,8 @@ public class TgAccountConfigController extends BaseController
     }
 
     /**
-     * 触发登录 - 调用 tg-client-telethon 的登录接口
+     * 触发登录 - 设置账号状态为login1(使用代理)
+     * 如果没有设置代理，则不做任何处理
      */
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")
     @PutMapping("/login/{id}")
@@ -109,23 +110,14 @@ public class TgAccountConfigController extends BaseController
         }
         if (account.getProxyHost() == null || account.getProxyHost().isEmpty())
         {
-            return error("未配置代理IP，禁止登录。请先为该账号配置代理IP。");
+            return error("未配置代理IP，请先为该账号配置代理IP。");
         }
-        try
-        {
-            String apiUrl = telethonUrl + "/api/login/" + account.getPhone();
-            String response = httpPost(apiUrl, "");
-            return success(response);
-        }
-        catch (Exception e)
-        {
-            log.error("触发登录失败", e);
-            return error("登录失败: " + e.getMessage());
-        }
+        tgTelethonAccountService.updateStatusById(id, "login1");
+        return success("设置成功等待登录");
     }
 
     /**
-     * 无代理登录 - 跳过代理校验，直接登录（用于测试判断是代理问题还是账号问题）
+     * 无代理登录 - 设置账号状态为login2(不使用代理)
      */
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")
     @PutMapping("/loginNoProxy/{id}")
@@ -140,21 +132,12 @@ public class TgAccountConfigController extends BaseController
         {
             return error("该账号已登录");
         }
-        try
-        {
-            String apiUrl = telethonUrl + "/api/login/noproxy/" + account.getPhone();
-            String response = httpPost(apiUrl, "");
-            return success(response);
-        }
-        catch (Exception e)
-        {
-            log.error("无代理登录失败", e);
-            return error("无代理登录失败: " + e.getMessage());
-        }
+        tgTelethonAccountService.updateStatusById(id, "login2");
+        return success("设置成功等待登录");
     }
 
     /**
-     * 登出账号 - 调用 tg-client-telethon
+     * 登出账号 - 设置状态为offline，节点会在下次心跳时处理
      */
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")
     @PutMapping("/logout/{id}")
@@ -165,92 +148,60 @@ public class TgAccountConfigController extends BaseController
         {
             return error("账号不存在");
         }
-        try
-        {
-            String apiUrl = telethonUrl + "/api/logout/" + account.getPhone();
-            String response = httpPost(apiUrl, "");
-            return success(response);
-        }
-        catch (Exception e)
-        {
-            log.error("登出账号失败", e);
-            return error("登出失败: " + e.getMessage());
-        }
+        tgTelethonAccountService.updateStatusById(id, "offline");
+        return success("设置成功，等待节点登出");
     }
 
     /**
-     * 批量登录 - 按批次登录所有等待中的账号
+     * 批量登录 - 按批次将所有有代理的账号设置为login1状态
      */
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")
     @PutMapping("/loginBatch/{batchNo}")
     public AjaxResult loginBatch(@PathVariable("batchNo") String batchNo)
     {
-        try
+        TgTelethonAccount query = new TgTelethonAccount();
+        if (!"all".equals(batchNo))
         {
-            String apiUrl;
-            if ("all".equals(batchNo))
-            {
-                apiUrl = telethonUrl + "/api/login/wait";
-            }
-            else
-            {
-                apiUrl = telethonUrl + "/api/login/batch/" + batchNo;
-            }
-            String response = httpPost(apiUrl, "");
-            return success(response);
+            query.setBatchNo(batchNo);
         }
-        catch (Exception e)
+        List<TgTelethonAccount> accounts = tgTelethonAccountService.selectTgTelethonAccountList(query);
+
+        int setCount = 0;
+        for (TgTelethonAccount acc : accounts)
         {
-            log.error("批量登录失败", e);
-            return error("批量登录失败: " + e.getMessage());
+            if (acc.getIsDeleted() != null && acc.getIsDeleted() == 1) continue;
+            if ("online".equals(acc.getStatus())) continue;
+            if (acc.getProxyHost() != null && !acc.getProxyHost().isEmpty())
+            {
+                tgTelethonAccountService.updateStatusById(acc.getId(), "login1");
+                setCount++;
+            }
         }
+        return success("设置成功等待登录，共设置 " + setCount + " 个账号");
     }
 
     /**
-     * 批量登出 - 按批次登出所有在线账号
+     * 批量登出 - 设置状态为offline
      */
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")
     @PutMapping("/logoutBatch/{batchNo}")
     public AjaxResult logoutBatch(@PathVariable("batchNo") String batchNo)
     {
-        try
+        TgTelethonAccount query = new TgTelethonAccount();
+        if (!"all".equals(batchNo))
         {
-            String apiUrl;
-            if ("all".equals(batchNo))
-            {
-                apiUrl = telethonUrl + "/api/logout/all";
-            }
-            else
-            {
-                apiUrl = telethonUrl + "/api/logout/batch/" + batchNo;
-            }
-            String response = httpPost(apiUrl, "");
-            return success(response);
+            query.setBatchNo(batchNo);
         }
-        catch (Exception e)
-        {
-            log.error("批量登出失败", e);
-            return error("批量登出失败: " + e.getMessage());
-        }
-    }
+        query.setStatus("online");
+        List<TgTelethonAccount> accounts = tgTelethonAccountService.selectTgTelethonAccountList(query);
 
-    /**
-     * 获取 tg-client-telethon 的服务状态
-     */
-    @PreAuthorize("@ss.hasPermi('tg:account:query')")
-    @GetMapping("/telethonStatus")
-    public AjaxResult getTelethonStatus()
-    {
-        try
+        int setCount = 0;
+        for (TgTelethonAccount acc : accounts)
         {
-            String response = httpGet(telethonUrl + "/api/status");
-            return success(response);
+            tgTelethonAccountService.updateStatusById(acc.getId(), "offline");
+            setCount++;
         }
-        catch (Exception e)
-        {
-            log.error("获取telethon状态失败", e);
-            return error("获取状态失败: " + e.getMessage());
-        }
+        return success("设置成功，共设置 " + setCount + " 个账号");
     }
 
     /**

@@ -19,6 +19,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="sendResult"       column="send_result"      />
         <result property="errorReason"      column="error_reason"     />
         <result property="createTime"       column="create_time"      />
+        <result property="nodeId"          column="node_id"          />
     </resultMap>
 
     <select id="selectList" parameterType="TgAutoReplyLog" resultMap="TgAutoReplyLogResult">

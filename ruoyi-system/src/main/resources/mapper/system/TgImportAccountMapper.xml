@@ -16,10 +16,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="loginTime"       column="login_time"       />
         <result property="createTime"      column="create_time"      />
         <result property="updateTime"      column="update_time"      />
+        <result property="nodeId"          column="node_id"          />
     </resultMap>
 
     <sql id="selectTgImportAccountVo">
-        select id, batch_no, phone, status, reason, tg_user_id, nickname, username, login_time, create_time, update_time
+        select id, batch_no, phone, status, reason, tg_user_id, nickname, username, login_time, node_id, create_time, update_time
         from tg_import_account
     </sql>
 

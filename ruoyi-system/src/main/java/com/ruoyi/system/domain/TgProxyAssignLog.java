@@ -20,6 +20,9 @@ public class TgProxyAssignLog extends BaseEntity
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
+    /** 账号所属节点ID */
+    private String nodeId;
+
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
@@ -43,4 +46,7 @@ public class TgProxyAssignLog extends BaseEntity
     public Date getCreateTime() { return createTime; }
     @Override
     public void setCreateTime(Date createTime) { this.createTime = createTime; }
+
+    public String getNodeId() { return nodeId; }
+    public void setNodeId(String nodeId) { this.nodeId = nodeId; }
 }

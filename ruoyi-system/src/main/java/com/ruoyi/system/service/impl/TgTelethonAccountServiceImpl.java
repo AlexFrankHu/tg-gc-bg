@@ -41,9 +41,9 @@ public class TgTelethonAccountServiceImpl implements ITgTelethonAccountService
     }
 
     @Override
-    public int insertWaitingAccount(String phone, String batchNo)
+    public int insertWaitingAccount(TgTelethonAccount account)
     {
-        return tgTelethonAccountMapper.insertWaitingAccount(phone, batchNo);
+        return tgTelethonAccountMapper.insertWaitingAccount(account);
     }
 
     @Override
@@ -62,5 +62,29 @@ public class TgTelethonAccountServiceImpl implements ITgTelethonAccountService
     public int updateAllAutoReply(Boolean autoReply)
     {
         return tgTelethonAccountMapper.updateAllAutoReply(autoReply);
+    }
+
+    @Override
+    public List<TgTelethonAccount> selectUnassignedAccounts()
+    {
+        return tgTelethonAccountMapper.selectUnassignedAccounts();
+    }
+
+    @Override
+    public int updateNodeId(Integer id, String nodeId)
+    {
+        return tgTelethonAccountMapper.batchUpdateNodeId(id, nodeId);
+    }
+
+    @Override
+    public int updateStatusById(Integer id, String status)
+    {
+        return tgTelethonAccountMapper.updateStatusById(id, status);
+    }
+
+    @Override
+    public int batchUpdateStatus(List<Integer> ids, String status)
+    {
+        return tgTelethonAccountMapper.batchUpdateStatus(ids, status);
     }
 }

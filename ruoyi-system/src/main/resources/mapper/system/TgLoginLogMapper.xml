@@ -14,6 +14,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="proxyInfo"   column="proxy_info"   />
         <result property="loginTime"   column="login_time"   />
         <result property="createTime"  column="create_time"  />
+        <result property="nodeId"          column="node_id"          />
     </resultMap>
 
     <select id="selectList" parameterType="TgLoginLog" resultMap="TgLoginLogResult">

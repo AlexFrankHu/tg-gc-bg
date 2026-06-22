@@ -24,6 +24,9 @@ public class TgSendFailLog extends BaseEntity
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
+    /** 账号所属节点ID */
+    private String nodeId;
+
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
@@ -49,4 +52,7 @@ public class TgSendFailLog extends BaseEntity
     public void setSendTime(Date sendTime) { this.sendTime = sendTime; }
     public Date getCreateTime() { return createTime; }
     public void setCreateTime(Date createTime) { this.createTime = createTime; }
+
+    public String getNodeId() { return nodeId; }
+    public void setNodeId(String nodeId) { this.nodeId = nodeId; }
 }

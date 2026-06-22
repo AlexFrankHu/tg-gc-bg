@@ -33,8 +33,20 @@
           <el-option label="在线" value="online" />
           <el-option label="离线" value="offline" />
           <el-option label="等待登录" value="waiting" />
+          <el-option label="登录中(代理)" value="login1" />
+          <el-option label="登录中(无代理)" value="login2" />
+          <el-option label="已限制" value="restricted" />
           <el-option label="已注销" value="banned" />
         </el-select>
+      </el-form-item>
+      <el-form-item label="节点ID" prop="nodeId">
+        <el-input
+          v-model="queryParams.nodeId"
+          placeholder="请输入节点ID"
+          clearable
+          style="width: 200px"
+          @keyup.enter="handleQuery"
+        />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
@@ -105,6 +117,7 @@
           <el-tag :type="statusTagType(scope.row.status)">{{ statusText(scope.row.status) }}</el-tag>
         </template>
       </el-table-column>
+      <el-table-column label="节点ID" align="center" prop="nodeId" width="140" show-overflow-tooltip />
       <el-table-column label="消息总数" align="center" prop="totalMsgCount" width="90">
         <template #default="scope">
           <span>{{ scope.row.totalMsgCount || 0 }}</span>
@@ -348,6 +361,7 @@ const data = reactive({
     nickname: undefined,
     batchNo: undefined,
     status: undefined,
+    nodeId: undefined,
   },
 });
 
@@ -359,6 +373,9 @@ function statusTagType(status) {
   if (status === "banned") return "danger";
   if (status === "waiting") return "warning";
   if (status === "failed") return "danger";
+  if (status === "login1") return "warning";
+  if (status === "login2") return "warning";
+  if (status === "restricted") return "danger";
   return "info";
 }
 
@@ -368,6 +385,9 @@ function statusText(status) {
   if (status === "banned") return "已注销";
   if (status === "waiting") return "等待登录";
   if (status === "failed") return "登录失败";
+  if (status === "login1") return "登录中(代理)";
+  if (status === "login2") return "登录中(无代理)";
+  if (status === "restricted") return "已限制";
   return status || "未知";
 }
 

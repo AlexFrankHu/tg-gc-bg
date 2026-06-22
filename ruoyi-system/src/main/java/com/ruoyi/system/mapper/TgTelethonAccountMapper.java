@@ -19,11 +19,19 @@ public interface TgTelethonAccountMapper
 
     public int deleteTgTelethonAccountByIds(Integer[] ids);
 
-    public int insertWaitingAccount(@Param("phone") String phone, @Param("batchNo") String batchNo);
+    public int insertWaitingAccount(TgTelethonAccount account);
 
     public int updateAccountProxy(TgTelethonAccount account);
 
     public int updateAutoReplyById(@Param("id") Integer id, @Param("autoReply") Boolean autoReply);
 
     public int updateAllAutoReply(@Param("autoReply") Boolean autoReply);
+
+    public List<TgTelethonAccount> selectUnassignedAccounts();
+
+    public int batchUpdateNodeId(@Param("id") Integer id, @Param("nodeId") String nodeId);
+
+    public int updateStatusById(@Param("id") Integer id, @Param("status") String status);
+
+    public int batchUpdateStatus(@Param("ids") List<Integer> ids, @Param("status") String status);
 }

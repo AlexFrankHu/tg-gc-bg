@@ -28,6 +28,7 @@
       <el-table-column label="消息类型" align="center" prop="contentType" width="90" />
       <el-table-column label="发送内容" align="center" prop="content" min-width="200" :show-overflow-tooltip="true" />
       <el-table-column label="失败原因" align="center" prop="errorReason" min-width="200" :show-overflow-tooltip="true" />
+      <el-table-column label="节点ID" align="center" prop="nodeId" min-width="160" :show-overflow-tooltip="true" />
       <el-table-column label="发送时间" align="center" prop="sendTime" width="170" />
     </el-table>
 

@@ -11,6 +11,7 @@
       <el-table-column label="账号" align="center" prop="accountPhone" min-width="140" />
       <el-table-column label="IP组" align="center" prop="proxyGroupTitle" min-width="120" :show-overflow-tooltip="true" />
       <el-table-column label="代理地址" align="center" prop="proxyUrl" min-width="200" :show-overflow-tooltip="true" />
+      <el-table-column label="节点ID" align="center" prop="nodeId" min-width="160" :show-overflow-tooltip="true" />
       <el-table-column label="时间" align="center" prop="createTime" width="180" />
     </el-table>
 

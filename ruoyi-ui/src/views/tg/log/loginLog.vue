@@ -39,6 +39,7 @@
       </el-table-column>
       <el-table-column label="错误原因" align="center" prop="reason" min-width="200" :show-overflow-tooltip="true" />
       <el-table-column label="代理信息" align="center" prop="proxyInfo" min-width="200" :show-overflow-tooltip="true" />
+      <el-table-column label="节点ID" align="center" prop="nodeId" min-width="160" :show-overflow-tooltip="true" />
       <el-table-column label="登录时间" align="center" prop="loginTime" width="180" />
     </el-table>
 

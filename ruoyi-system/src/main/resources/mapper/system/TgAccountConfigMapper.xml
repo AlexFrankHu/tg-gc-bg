@@ -18,13 +18,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="deviceModel"     column="device_model"     />
         <result property="systemVersion"   column="system_version"   />
         <result property="appVersion"      column="app_version"      />
-        <result property="systemLanguageCode" column="system_language_code" />
+        <result property="systemLanguageCode" column="system_lang_code" />
         <result property="twoFaPassword"   column="two_fa_password"  />
         <result property="lastOnlineTime"  column="last_online_time" />
     </resultMap>
 
     <sql id="selectTgAccountConfigVo">
-        select id, tg_user_id, nickname, username, custom_username, notice_flag, phone_num, login_status, api_id, api_hash, device_model, system_version, app_version, system_language_code, two_fa_password, last_online_time
+        select id, tg_user_id, nickname, username, custom_username, notice_flag, phone_num, login_status, api_id, api_hash, device_model, system_version, app_version, system_lang_code, two_fa_password, last_online_time
         from tg_account_config
     </sql>
 
@@ -67,7 +67,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="deviceModel != null and deviceModel != ''">device_model,</if>
             <if test="systemVersion != null and systemVersion != ''">system_version,</if>
             <if test="appVersion != null and appVersion != ''">app_version,</if>
-            <if test="systemLanguageCode != null and systemLanguageCode != ''">system_language_code,</if>
+            <if test="systemLanguageCode != null and systemLanguageCode != ''">system_lang_code,</if>
             <if test="twoFaPassword != null and twoFaPassword != ''">two_fa_password,</if>
             <if test="lastOnlineTime != null">last_online_time,</if>
         </trim>
@@ -105,7 +105,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="deviceModel != null">device_model = #{deviceModel},</if>
             <if test="systemVersion != null">system_version = #{systemVersion},</if>
             <if test="appVersion != null">app_version = #{appVersion},</if>
-            <if test="systemLanguageCode != null">system_language_code = #{systemLanguageCode},</if>
+            <if test="systemLanguageCode != null">system_lang_code = #{systemLanguageCode},</if>
             <if test="twoFaPassword != null">two_fa_password = #{twoFaPassword},</if>
             <if test="lastOnlineTime != null">last_online_time = #{lastOnlineTime},</if>
         </trim>

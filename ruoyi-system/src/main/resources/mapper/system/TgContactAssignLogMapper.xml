@@ -40,9 +40,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <insert id="insert" parameterType="TgContactAssignLog">
         insert into tg_contact_assign_log (account_batch_no, account_batch_title, account_id, account_phone,
-            contact_batch_no, contact_batch_title, contact_phone, contact_username, status, remark, retry_count, add_method, create_time)
+            contact_batch_no, contact_batch_title, contact_phone, contact_username, status, remark, retry_count, add_method, node_id, create_time)
         values (#{accountBatchNo}, #{accountBatchTitle}, #{accountId}, #{accountPhone},
-            #{contactBatchNo}, #{contactBatchTitle}, #{contactPhone}, #{contactUsername}, #{status}, #{remark}, #{retryCount}, #{addMethod}, now())
+            #{contactBatchNo}, #{contactBatchTitle}, #{contactPhone}, #{contactUsername}, #{status}, #{remark}, #{retryCount}, #{addMethod}, #{nodeId}, now())
     </insert>
 
 </mapper>

@@ -62,6 +62,7 @@
       </el-table-column>
       <el-table-column label="添加次数" align="center" prop="retryCount" width="100" />
       <el-table-column label="备注" align="center" prop="remark" min-width="180" :show-overflow-tooltip="true" />
+      <el-table-column label="节点ID" align="center" prop="nodeId" min-width="160" :show-overflow-tooltip="true" />
       <el-table-column label="时间" align="center" prop="createTime" width="180" />
     </el-table>
 

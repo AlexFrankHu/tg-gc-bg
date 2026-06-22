@@ -11,6 +11,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="totalAccountCount"  column="total_account_count"  />
         <result property="onlineAccountCount" column="online_account_count" />
         <result property="nodeDir"            column="node_dir"             />
+        <result property="nodePort"           column="node_port"            />
+        <result property="nodeStatus"         column="node_status"          />
         <result property="lastActiveTime"     column="last_active_time"     />
         <result property="maxAccountCount"    column="max_account_count"    />
         <result property="createTime"         column="create_time"          />
@@ -19,7 +21,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <sql id="selectTgClusterNodeVo">
         select node_id, public_ip, private_ip, total_account_count, online_account_count,
-               node_dir, last_active_time, max_account_count, create_time, update_time
+               node_dir, node_port, node_status, last_active_time, max_account_count, create_time, update_time
         from tg_cluster_node
     </sql>
 
@@ -44,6 +46,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectActiveNodes" resultMap="TgClusterNodeResult">
         <include refid="selectTgClusterNodeVo"/>
         where last_active_time >= DATE_SUB(NOW(), INTERVAL #{minutes} MINUTE)
+          and (node_status = '1' or node_status is null)
         order by online_account_count asc
     </select>
 
@@ -51,6 +54,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         update tg_cluster_node
         <trim prefix="SET" suffixOverrides=",">
             <if test="maxAccountCount != null">max_account_count = #{maxAccountCount},</if>
+            <if test="nodeStatus != null and nodeStatus != ''">node_status = #{nodeStatus},</if>
             update_time = now(),
         </trim>
         where node_id = #{nodeId}

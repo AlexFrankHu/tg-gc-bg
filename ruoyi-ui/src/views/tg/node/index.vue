@@ -42,11 +42,19 @@
         </template>
       </el-table-column>
       <el-table-column label="最大账号数" align="center" prop="maxAccountCount" width="110" />
+      <el-table-column label="端口" align="center" prop="nodePort" width="80" />
       <el-table-column label="节点目录" align="center" prop="nodeDir" min-width="200" :show-overflow-tooltip="true" />
-      <el-table-column label="状态" align="center" width="80">
+      <el-table-column label="运行状态" align="center" width="90">
         <template #default="scope">
           <el-tag :type="isActive(scope.row) ? 'success' : 'danger'">
             {{ isActive(scope.row) ? '在线' : '离线' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="节点状态" align="center" width="90">
+        <template #default="scope">
+          <el-tag :type="scope.row.nodeStatus === '0' ? 'danger' : 'success'">
+            {{ scope.row.nodeStatus === '0' ? '关闭' : '开启' }}
           </el-tag>
         </template>
       </el-table-column>
@@ -78,6 +86,12 @@
         </el-form-item>
         <el-form-item label="最大账号数" prop="maxAccountCount">
           <el-input-number v-model="form.maxAccountCount" :min="0" :max="10000" />
+        </el-form-item>
+        <el-form-item label="节点状态" prop="nodeStatus">
+          <el-radio-group v-model="form.nodeStatus">
+            <el-radio value="1">开启</el-radio>
+            <el-radio value="0">关闭</el-radio>
+          </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -158,7 +172,7 @@ function handleEdit(row) {
 function submitForm() {
   proxy.$refs["nodeRef"].validate(valid => {
     if (valid) {
-      updateNode({ nodeId: form.value.nodeId, maxAccountCount: form.value.maxAccountCount }).then(response => {
+      updateNode({ nodeId: form.value.nodeId, maxAccountCount: form.value.maxAccountCount, nodeStatus: form.value.nodeStatus }).then(response => {
         proxy.$modal.msgSuccess("修改成功");
         open.value = false;
         getList();

@@ -29,6 +29,12 @@ public class TgClusterNode extends BaseEntity
     /** 节点目录 */
     private String nodeDir;
 
+    /** 节点端口 */
+    private Integer nodePort;
+
+    /** 节点状态(1开启 0关闭) */
+    private String nodeStatus;
+
     /** 最后活跃时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastActiveTime;
@@ -61,6 +67,12 @@ public class TgClusterNode extends BaseEntity
 
     public String getNodeDir() { return nodeDir; }
     public void setNodeDir(String nodeDir) { this.nodeDir = nodeDir; }
+
+    public Integer getNodePort() { return nodePort; }
+    public void setNodePort(Integer nodePort) { this.nodePort = nodePort; }
+
+    public String getNodeStatus() { return nodeStatus; }
+    public void setNodeStatus(String nodeStatus) { this.nodeStatus = nodeStatus; }
 
     public Date getLastActiveTime() { return lastActiveTime; }
     public void setLastActiveTime(Date lastActiveTime) { this.lastActiveTime = lastActiveTime; }

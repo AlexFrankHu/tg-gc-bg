@@ -138,7 +138,7 @@
           <el-button link type="success" @click="handleLogin(scope.row)" v-if="scope.row.status !== 'online'" v-hasPermi="['tg:account:edit']">登录</el-button>
           <el-button link type="info" @click="handleLoginNoProxy(scope.row)" v-if="scope.row.status !== 'online'" v-hasPermi="['tg:account:edit']">无代理登录</el-button>
           <el-button link type="warning" @click="handleLogout(scope.row)" v-if="scope.row.status === 'online'" v-hasPermi="['tg:account:edit']">登出</el-button>
-          <el-button link type="primary" @click="handleWebClient(scope.row)" v-if="scope.row.status === 'online'">网页端</el-button>
+          <!-- <el-button link type="primary" @click="handleWebClient(scope.row)" v-if="scope.row.status === 'online'">网页端</el-button> -->
           <el-dropdown trigger="click" @command="(cmd) => handleProxyCommand(cmd, scope.row)">
             <el-button link type="primary">代理IP<el-icon class="el-icon--right"><arrow-down /></el-icon></el-button>
             <template #dropdown>

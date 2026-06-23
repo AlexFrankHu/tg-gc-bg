@@ -468,6 +468,15 @@ public class TgImportController extends BaseController
 
         if (accounts.isEmpty()) return error("该批次下没有在线的账号");
 
+        // Validate all accounts have node_id assigned
+        List<String> noNodeAccounts = accounts.stream()
+            .filter(a -> a.getNodeId() == null || a.getNodeId().isEmpty())
+            .map(TgTelethonAccount::getPhone)
+            .collect(java.util.stream.Collectors.toList());
+        if (!noNodeAccounts.isEmpty()) {
+            return error("以下账号未分配节点，无法分配好友: " + String.join(", ", noNodeAccounts));
+        }
+
         // Get contact records
         List<TgContactImportRecord> contacts = contactRecordService.selectByBatchNo(contactBatchNo);
         if (contacts.isEmpty()) return error("好友批次中没有数据");

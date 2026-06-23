@@ -35,6 +35,7 @@
           <el-option label="等待登录" value="waiting" />
           <el-option label="登录中(代理)" value="login1" />
           <el-option label="登录中(无代理)" value="login2" />
+          <el-option label="失败" value="failed" />
           <el-option label="已限制" value="restricted" />
           <el-option label="已注销" value="banned" />
         </el-select>

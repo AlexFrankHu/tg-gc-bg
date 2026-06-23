@@ -84,6 +84,8 @@
           <span v-else>-</span>
         </template>
       </el-table-column>
+      <el-table-column label="TG用户ID" align="center" prop="tgUserId" width="120" show-overflow-tooltip />
+      <el-table-column label="国家" align="center" prop="country" width="80" show-overflow-tooltip />
       <el-table-column label="状态" align="center" prop="status" width="80">
         <template #default="scope">
           <el-tag :type="statusTagType(scope.row.status)" size="small">{{ statusText(scope.row.status) }}</el-tag>

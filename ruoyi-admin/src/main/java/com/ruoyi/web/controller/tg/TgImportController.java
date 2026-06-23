@@ -466,7 +466,19 @@ public class TgImportController extends BaseController
         List<TgTelethonAccount> accounts = telethonAccountService.selectTgTelethonAccountList(query);
         accounts.removeIf(a -> (a.getIsDeleted() != null && a.getIsDeleted() == 1) || !"online".equals(a.getStatus()));
 
-        if (accounts.isEmpty()) return error("该批次下没有在线的账号");
+        // Filter out restricted accounts — do not assign contacts to them
+        List<String> restrictedPhones = accounts.stream()
+            .filter(a -> a.getIsRestricted() != null && a.getIsRestricted())
+            .map(TgTelethonAccount::getPhone)
+            .collect(java.util.stream.Collectors.toList());
+        accounts.removeIf(a -> a.getIsRestricted() != null && a.getIsRestricted());
+
+        if (accounts.isEmpty()) {
+            if (!restrictedPhones.isEmpty()) {
+                return error("该批次下在线账号均被限制，无法分配好友");
+            }
+            return error("该批次下没有在线的账号");
+        }
 
         // Validate all accounts have node_id assigned
         List<String> noNodeAccounts = accounts.stream()

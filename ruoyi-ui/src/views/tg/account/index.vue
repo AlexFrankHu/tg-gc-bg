@@ -73,74 +73,69 @@
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="accountList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="ID" align="center" prop="id" width="60" />
-      <el-table-column label="手机号" align="center" prop="phone" width="160" />
-      <el-table-column label="批次" align="center" prop="batchTitle" min-width="120" :show-overflow-tooltip="true">
-        <template #default="scope">
-          <span>{{ scope.row.batchTitle || '-' }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="TG昵称" align="center" prop="nickname" :show-overflow-tooltip="true" min-width="120" />
-      <el-table-column label="TG用户名" align="center" prop="username" :show-overflow-tooltip="true" min-width="120">
+    <el-table v-loading="loading" :data="accountList" @selection-change="handleSelectionChange" :border="true" style="width: 100%">
+      <el-table-column type="selection" width="40" align="center" fixed="left" />
+      <el-table-column label="ID" align="center" prop="id" width="55" fixed="left" />
+      <el-table-column label="手机号" align="center" prop="phone" width="120" fixed="left" show-overflow-tooltip />
+      <el-table-column label="昵称" align="center" prop="nickname" width="100" show-overflow-tooltip />
+      <el-table-column label="用户名" align="center" prop="username" width="100" show-overflow-tooltip>
         <template #default="scope">
           <span v-if="scope.row.username">@{{ scope.row.username }}</span>
           <span v-else>-</span>
         </template>
       </el-table-column>
-      <el-table-column label="TG用户ID" align="center" prop="tgUserId" width="140" />
-      <el-table-column label="国家" align="center" prop="country" width="120" :show-overflow-tooltip="true">
+      <el-table-column label="状态" align="center" prop="status" width="80">
         <template #default="scope">
-          <span>{{ scope.row.country || '-' }}</span>
+          <el-tag :type="statusTagType(scope.row.status)" size="small">{{ statusText(scope.row.status) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="代理IP" align="center" min-width="120" :show-overflow-tooltip="true">
+      <el-table-column label="批次" align="center" prop="batchTitle" width="100" show-overflow-tooltip>
+        <template #default="scope">
+          <span>{{ scope.row.batchTitle || '-' }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="代理IP" align="center" width="90" show-overflow-tooltip>
         <template #default="scope">
           <el-tag v-if="scope.row.proxyGroupTitle" type="success" size="small">{{ scope.row.proxyGroupTitle }}</el-tag>
-          <el-tag v-else-if="scope.row.proxyUrl" type="warning" size="small">手动配置</el-tag>
+          <el-tag v-else-if="scope.row.proxyUrl" type="warning" size="small">手动</el-tag>
           <span v-else>-</span>
         </template>
       </el-table-column>
-      <el-table-column label="自动回复" align="center" min-width="100">
+      <el-table-column label="自动回复" align="center" width="70">
         <template #default="scope">
-          <el-tag :type="scope.row.autoReply ? 'success' : 'danger'" size="small">{{ scope.row.autoReply ? '开启' : '关闭' }}</el-tag>
+          <el-tag :type="scope.row.autoReply ? 'success' : 'danger'" size="small">{{ scope.row.autoReply ? '开' : '关' }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="是否被限制" align="center" min-width="100">
+      <el-table-column label="限制" align="center" width="60">
         <template #default="scope">
-          <el-tag :type="scope.row.isRestricted ? 'danger' : 'success'" size="small">{{ scope.row.isRestricted ? '已限制' : '正常' }}</el-tag>
+          <el-tag v-if="scope.row.isRestricted" type="danger" size="small">是</el-tag>
+          <span v-else>-</span>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" prop="status" width="100">
-        <template #default="scope">
-          <el-tag :type="statusTagType(scope.row.status)">{{ statusText(scope.row.status) }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="节点ID" align="center" prop="nodeId" width="140" show-overflow-tooltip />
-      <el-table-column label="消息总数" align="center" prop="totalMsgCount" width="90">
+      <el-table-column label="节点" align="center" prop="nodeId" width="100" show-overflow-tooltip />
+      <el-table-column label="消息" align="center" width="70">
         <template #default="scope">
           <span>{{ scope.row.totalMsgCount || 0 }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="发送总数" align="center" prop="sentMsgCount" width="90">
+      <el-table-column label="发/收" align="center" width="80">
         <template #default="scope">
-          <span style="color: #67c23a">{{ scope.row.sentMsgCount || 0 }}</span>
+          <span style="color: #67c23a">{{ scope.row.sentMsgCount || 0 }}</span>/<span style="color: #409eff">{{ scope.row.recvMsgCount || 0 }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="接收总数" align="center" prop="recvMsgCount" width="90">
+      <el-table-column label="最后登录" align="center" prop="lastLoginTime" width="140" show-overflow-tooltip>
         <template #default="scope">
-          <span style="color: #409eff">{{ scope.row.recvMsgCount || 0 }}</span>
+          <span>{{ scope.row.lastLoginTime || '-' }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="680">
+      <el-table-column label="操作" align="center" class-name="small-padding" fixed="right" width="280">
         <template #default="scope">
-          <el-button link type="success" @click="handleLogin(scope.row)" v-if="scope.row.status !== 'online'" v-hasPermi="['tg:account:edit']">登录</el-button>
-          <el-button link type="info" @click="handleLoginNoProxy(scope.row)" v-if="scope.row.status !== 'online'" v-hasPermi="['tg:account:edit']">无代理登录</el-button>
-          <el-button link type="warning" @click="handleLogout(scope.row)" v-if="scope.row.status === 'online'" v-hasPermi="['tg:account:edit']">登出</el-button>
+          <el-button link type="success" size="small" @click="handleLogin(scope.row)" v-if="scope.row.status !== 'online'" v-hasPermi="['tg:account:edit']">登录</el-button>
+          <el-button link type="info" size="small" @click="handleLoginNoProxy(scope.row)" v-if="scope.row.status !== 'online'" v-hasPermi="['tg:account:edit']">免代理</el-button>
+          <el-button link type="warning" size="small" @click="handleLogout(scope.row)" v-if="scope.row.status === 'online'" v-hasPermi="['tg:account:edit']">登出</el-button>
           <!-- <el-button link type="primary" @click="handleWebClient(scope.row)" v-if="scope.row.status === 'online'">网页端</el-button> -->
           <el-dropdown trigger="click" @command="(cmd) => handleProxyCommand(cmd, scope.row)">
-            <el-button link type="primary">代理IP<el-icon class="el-icon--right"><arrow-down /></el-icon></el-button>
+            <el-button link type="primary" size="small">代理<el-icon class="el-icon--right"><arrow-down /></el-icon></el-button>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="view">查看代理IP</el-dropdown-item>
@@ -150,15 +145,17 @@
               </el-dropdown-menu>
             </template>
           </el-dropdown>
-          <el-button v-if="scope.row.autoReply" link type="danger" @click="handleToggleAccountAutoReply(scope.row)" v-hasPermi="['tg:account:edit']">关闭自动回复</el-button>
-          <el-button v-else link type="success" @click="handleToggleAccountAutoReply(scope.row)" v-hasPermi="['tg:account:edit']">开启自动回复</el-button>
-          <el-button link type="success" icon="Download" @click="handleExportChat(scope.row)">导出聊天记录</el-button>
-          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-if="scope.row.status !== 'online'" v-hasPermi="['tg:account:remove']">删除</el-button>
-        </template>
-      </el-table-column>
-      <el-table-column label="最后登录时间" align="center" prop="lastLoginTime" width="180">
-        <template #default="scope">
-          <span>{{ scope.row.lastLoginTime || '-' }}</span>
+          <el-button v-if="scope.row.autoReply" link type="danger" size="small" @click="handleToggleAccountAutoReply(scope.row)" v-hasPermi="['tg:account:edit']">关回复</el-button>
+          <el-button v-else link type="success" size="small" @click="handleToggleAccountAutoReply(scope.row)" v-hasPermi="['tg:account:edit']">开回复</el-button>
+          <el-dropdown trigger="click" @command="(cmd) => handleMoreCommand(cmd, scope.row)">
+            <el-button link type="primary" size="small">更多<el-icon class="el-icon--right"><arrow-down /></el-icon></el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="exportChat">导出聊天记录</el-dropdown-item>
+                <el-dropdown-item command="delete" v-if="scope.row.status !== 'online'">删除</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </template>
       </el-table-column>
     </el-table>
@@ -639,6 +636,14 @@ function handleAllAccountAutoReply(autoReply) {
       getList();
     });
   }).catch(() => {});
+}
+
+function handleMoreCommand(cmd, row) {
+  if (cmd === 'exportChat') {
+    handleExportChat(row);
+  } else if (cmd === 'delete') {
+    handleDelete(row);
+  }
 }
 
 function handleExportChat(row) {

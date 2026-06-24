@@ -90,6 +90,16 @@ export function listAutoReplyLog(query) {
   })
 }
 
+// 导出自动回复日志
+export function exportAutoReplyLog(query) {
+  return request({
+    url: '/tg/import/autoReplyLog/export',
+    method: 'post',
+    params: query,
+    responseType: 'blob'
+  })
+}
+
 // 导出好友分配日志
 export function exportContactAssignLog(query) {
   return request({

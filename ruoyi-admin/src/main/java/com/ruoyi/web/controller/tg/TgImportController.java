@@ -727,6 +727,38 @@ public class TgImportController extends BaseController
         return getDataTable(list);
     }
 
+    /**
+     * 导出自动回复日志
+     */
+    @PreAuthorize("@ss.hasPermi('tg:import:list')")
+    @PostMapping("/autoReplyLog/export")
+    public void exportAutoReplyLog(jakarta.servlet.http.HttpServletResponse response, TgAutoReplyLog logQuery)
+    {
+        List<TgAutoReplyLog> list = autoReplyLogMapper.selectList(logQuery);
+        List<com.ruoyi.system.domain.vo.TgAutoReplyLogExport> exportList = new ArrayList<>();
+        for (TgAutoReplyLog l : list)
+        {
+            com.ruoyi.system.domain.vo.TgAutoReplyLogExport vo = new com.ruoyi.system.domain.vo.TgAutoReplyLogExport();
+            vo.setId(l.getId());
+            vo.setAccountPhone(l.getAccountPhone());
+            vo.setAccountNickname(l.getAccountNickname());
+            vo.setFriendNickname(l.getFriendNickname());
+            vo.setFriendPhone(l.getFriendPhone());
+            String triggerLabel = "incoming".equals(l.getTriggerType()) ? "收到消息" : "polling".equals(l.getTriggerType()) ? "定时轮询" : l.getTriggerType();
+            vo.setTriggerTypeLabel(triggerLabel);
+            vo.setState(l.getState());
+            vo.setReplyContent(l.getReplyContent());
+            String resultLabel = "success".equals(l.getSendResult()) ? "成功" : "failed".equals(l.getSendResult()) ? "失败" : "no_reply".equals(l.getSendResult()) ? "无回复" : "api_error".equals(l.getSendResult()) ? "API错误" : l.getSendResult();
+            vo.setSendResultLabel(resultLabel);
+            vo.setErrorReason(l.getErrorReason());
+            vo.setNodeId(l.getNodeId());
+            vo.setCreateTime(l.getCreateTime());
+            exportList.add(vo);
+        }
+        com.ruoyi.common.utils.poi.ExcelUtil<com.ruoyi.system.domain.vo.TgAutoReplyLogExport> util = new com.ruoyi.common.utils.poi.ExcelUtil<>(com.ruoyi.system.domain.vo.TgAutoReplyLogExport.class);
+        util.exportExcel(response, exportList, "自动回复日志");
+    }
+
     private String callTelethonAddContact(String phone, String contactPhone) throws Exception
     {
         URL url = new URL(telethonUrl + "/api/add-contact");

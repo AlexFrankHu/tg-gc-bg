@@ -24,6 +24,7 @@
       <el-form-item>
         <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
         <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+        <el-button type="info" plain icon="Download" @click="handleExport">导出</el-button>
       </el-form-item>
     </el-form>
 
@@ -71,6 +72,8 @@
 <script setup name="AutoReplyLog">
 import { listAutoReplyLog } from "@/api/tg/import";
 
+const { proxy } = getCurrentInstance();
+
 const showSearch = ref(true);
 const logList = ref([]);
 const loading = ref(true);
@@ -105,6 +108,15 @@ function resetQuery() {
   queryParams.value.sendResult = undefined;
   queryParams.value.triggerType = undefined;
   handleQuery();
+}
+
+function handleExport() {
+  proxy.$modal.confirm('是否确认导出自动回复日志数据？').then(() => {
+    const params = { ...queryParams.value };
+    delete params.pageNum;
+    delete params.pageSize;
+    proxy.download('tg/import/autoReplyLog/export', params, '自动回复日志.xlsx');
+  }).catch(() => {});
 }
 
 getList();

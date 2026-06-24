@@ -23,6 +23,8 @@ public class TgContactAssignLog extends BaseEntity
     private String accountStatus;
     /** 添加方式(one_by_one逐个添加 contact_import联系人导入) */
     private String addMethod;
+    /** 失败原因 */
+    private String errorReason;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
@@ -65,4 +67,6 @@ public class TgContactAssignLog extends BaseEntity
     public void setNodeId(String nodeId) { this.nodeId = nodeId; }
     public String getAddMethod() { return addMethod; }
     public void setAddMethod(String addMethod) { this.addMethod = addMethod; }
+    public String getErrorReason() { return errorReason; }
+    public void setErrorReason(String errorReason) { this.errorReason = errorReason; }
 }

@@ -31,6 +31,9 @@ public class TgContactAssignLogExport
     @Excel(name = "添加次数")
     private Integer retryCount;
 
+    @Excel(name = "失败原因", width = 40)
+    private String errorReason;
+
     @Excel(name = "备注", width = 40)
     private String remark;
 
@@ -52,6 +55,8 @@ public class TgContactAssignLogExport
     public void setStatusLabel(String statusLabel) { this.statusLabel = statusLabel; }
     public Integer getRetryCount() { return retryCount; }
     public void setRetryCount(Integer retryCount) { this.retryCount = retryCount; }
+    public String getErrorReason() { return errorReason; }
+    public void setErrorReason(String errorReason) { this.errorReason = errorReason; }
     public String getRemark() { return remark; }
     public void setRemark(String remark) { this.remark = remark; }
     public Date getCreateTime() { return createTime; }

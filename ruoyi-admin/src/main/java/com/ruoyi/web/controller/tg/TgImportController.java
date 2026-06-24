@@ -683,6 +683,7 @@ public class TgImportController extends BaseController
             String statusLabel = "pending".equals(l.getStatus()) ? "待办" : "success".equals(l.getStatus()) ? "成功" : "failed".equals(l.getStatus()) ? "失败" : "skipped".equals(l.getStatus()) ? "跳过" : l.getStatus();
             vo.setStatusLabel(statusLabel);
             vo.setRetryCount(l.getRetryCount());
+            vo.setErrorReason(l.getErrorReason());
             vo.setRemark(l.getRemark());
             vo.setCreateTime(l.getCreateTime());
             exportList.add(vo);

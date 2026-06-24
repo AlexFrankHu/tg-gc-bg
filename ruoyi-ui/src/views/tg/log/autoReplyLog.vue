@@ -115,7 +115,7 @@ function handleExport() {
     const params = { ...queryParams.value };
     delete params.pageNum;
     delete params.pageSize;
-    proxy.download('tg/import/autoReplyLog/export', params, '自动回复日志.xlsx');
+    proxy.download('tg/import/autoReplyLog/export', params, '自动回复日志.xlsx', { timeout: 300000 });
   }).catch(() => {});
 }
 

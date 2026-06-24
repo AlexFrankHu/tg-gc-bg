@@ -15,8 +15,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.system.domain.TgClusterNode;
 import com.ruoyi.system.domain.TgProxyGroup;
 import com.ruoyi.system.domain.TgProxyIp;
+import com.ruoyi.system.service.ITgClusterNodeService;
 import com.ruoyi.system.service.ITgProxyGroupService;
 import com.ruoyi.system.service.ITgProxyIpService;
 import org.slf4j.Logger;
@@ -37,8 +39,8 @@ public class TgProxyController extends BaseController
     @Autowired
     private ITgProxyIpService proxyIpService;
 
-    @Value("${tg.telethon.url:http://localhost:8807}")
-    private String telethonUrl;
+    @Autowired
+    private ITgClusterNodeService clusterNodeService;
 
     // proxy URL pattern: {protocol}://{username}:{password}@{host}:{port}
     private static final Pattern PROXY_PATTERN = Pattern.compile(
@@ -391,7 +393,15 @@ public class TgProxyController extends BaseController
             {
                 return error("代理IP不存在");
             }
-            String apiUrl = telethonUrl + "/api/proxy/test";
+            // Pick any active cluster node to test the proxy
+            List<TgClusterNode> activeNodes = clusterNodeService.selectActiveNodes(2);
+            if (activeNodes == null || activeNodes.isEmpty())
+            {
+                return error("没有活跃的节点，无法测试代理");
+            }
+            TgClusterNode node = activeNodes.get(0);
+            String nodeIp = node.getPrivateIp() != null ? node.getPrivateIp() : node.getPublicIp();
+            String apiUrl = "http://" + nodeIp + ":" + node.getNodePort() + "/api/proxy/test";
             String json = "{\"proxy_url\":\"" + proxyIp.getProxyUrl() + "\"}";
 
             HttpURLConnection conn = (HttpURLConnection) new URL(apiUrl).openConnection();

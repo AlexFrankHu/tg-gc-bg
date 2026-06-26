@@ -83,6 +83,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="nodeId != null and nodeId != ''">
                 AND a.node_id = #{nodeId}
             </if>
+            <if test="isRestricted != null">
+                AND a.is_restricted = #{isRestricted}
+            </if>
         </where>
         order by a.id desc
     </select>

@@ -40,6 +40,12 @@
           <el-option label="已注销" value="banned" />
         </el-select>
       </el-form-item>
+      <el-form-item label="是否限制" prop="isRestricted">
+        <el-select v-model="queryParams.isRestricted" placeholder="请选择" clearable style="width: 120px">
+          <el-option label="是" :value="1" />
+          <el-option label="否" :value="0" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="节点ID" prop="nodeId">
         <el-input
           v-model="queryParams.nodeId"
@@ -361,6 +367,7 @@ const data = reactive({
     nickname: undefined,
     batchNo: undefined,
     status: undefined,
+    isRestricted: undefined,
     nodeId: undefined,
   },
 });

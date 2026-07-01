@@ -42,6 +42,7 @@
         </template>
       </el-table-column>
       <el-table-column label="最大账号数" align="center" prop="maxAccountCount" width="110" />
+      <el-table-column label="节点类型" align="center" prop="nodeType" width="100" />
       <el-table-column label="端口" align="center" prop="nodePort" width="80" />
       <el-table-column label="节点目录" align="center" prop="nodeDir" min-width="200" :show-overflow-tooltip="true" />
       <el-table-column label="运行状态" align="center" width="90">

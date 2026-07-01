@@ -293,6 +293,134 @@ public class TgProxyController extends BaseController
     }
 
     /**
+     * 导入proxy代理IP组
+     * 格式: host:port:username:password (每行一个, 默认socks5协议)
+     */
+    @PreAuthorize("@ss.hasPermi('tg:proxy:add')")
+    @PostMapping("/importProxy")
+    public AjaxResult importProxyFormat(@RequestParam("file") MultipartFile file,
+                                        @RequestParam("title") String title,
+                                        @RequestParam("country") String country,
+                                        @RequestParam(value = "expireTime", required = false) String expireTime,
+                                        @RequestParam(value = "maxBindable", defaultValue = "1") Integer maxBindable)
+    {
+        try
+        {
+            List<String> lines = new ArrayList<>();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)))
+            {
+                String line;
+                while ((line = reader.readLine()) != null)
+                {
+                    line = line.trim();
+                    if (!line.isEmpty())
+                    {
+                        lines.add(line);
+                    }
+                }
+            }
+
+            if (lines.isEmpty())
+            {
+                return error("文件中没有有效的代理IP数据");
+            }
+
+            // Parse proxy format: host:port:username:password
+            List<TgProxyIp> proxyIps = new ArrayList<>();
+            List<String> errors = new ArrayList<>();
+            for (int i = 0; i < lines.size(); i++)
+            {
+                String proxyLine = lines.get(i);
+                String[] parts = proxyLine.split(":");
+                if (parts.length == 4)
+                {
+                    String host = parts[0].trim();
+                    String portStr = parts[1].trim();
+                    String username = parts[2].trim();
+                    String password = parts[3].trim();
+                    try
+                    {
+                        int port = Integer.parseInt(portStr);
+                        TgProxyIp ip = new TgProxyIp();
+                        ip.setProtocol("socks5");
+                        ip.setUsername(username);
+                        ip.setPassword(password);
+                        ip.setHost(host);
+                        ip.setPort(port);
+                        ip.setProxyUrl("socks5://" + username + ":" + password + "@" + host + ":" + port);
+                        ip.setMaxBindable(maxBindable);
+                        proxyIps.add(ip);
+                    }
+                    catch (NumberFormatException e)
+                    {
+                        errors.add("第" + (i + 1) + "行端口格式错误: " + proxyLine);
+                    }
+                }
+                else
+                {
+                    errors.add("第" + (i + 1) + "行格式错误(应为 host:port:username:password): " + proxyLine);
+                }
+            }
+
+            if (proxyIps.isEmpty())
+            {
+                return error("没有解析到有效的代理IP。" + (errors.isEmpty() ? "" : "错误: " + String.join("; ", errors)));
+            }
+
+            // Create group
+            String groupNo = UUID.randomUUID().toString().replace("-", "");
+            TgProxyGroup group = new TgProxyGroup();
+            group.setGroupNo(groupNo);
+            group.setTitle(title);
+            group.setCountry(country);
+            group.setMaxBindable(maxBindable);
+            group.setTotalCount(proxyIps.size());
+            group.setImportTime(new Date());
+
+            if (expireTime != null && !expireTime.isEmpty())
+            {
+                try
+                {
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    group.setExpireTime(sdf.parse(expireTime));
+                }
+                catch (Exception e)
+                {
+                    try
+                    {
+                        java.text.SimpleDateFormat sdf2 = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                        group.setExpireTime(sdf2.parse(expireTime));
+                    }
+                    catch (Exception e2)
+                    {
+                        // Use default
+                    }
+                }
+            }
+
+            proxyGroupService.insertTgProxyGroup(group);
+
+            for (TgProxyIp ip : proxyIps)
+            {
+                ip.setGroupNo(groupNo);
+            }
+            proxyIpService.batchInsertTgProxyIp(proxyIps);
+
+            String msg = "导入成功，共 " + proxyIps.size() + " 个代理IP";
+            if (!errors.isEmpty())
+            {
+                msg += "（" + errors.size() + " 行解析失败）";
+            }
+            return success(msg);
+        }
+        catch (Exception e)
+        {
+            log.error("导入proxy代理IP失败", e);
+            return error("导入失败: " + e.getMessage());
+        }
+    }
+
+    /**
      * IP组列表
      */
     @PreAuthorize("@ss.hasPermi('tg:proxy:list')")

@@ -66,3 +66,14 @@ export function importIpflyProxy(data) {
     timeout: 60000,
   })
 }
+
+// 导入proxy代理 (host:port:username:password)
+export function importProxyFormat(data) {
+  return request({
+    url: '/tg/proxy/importProxy',
+    method: 'post',
+    headers: { 'Content-Type': 'multipart/form-data' },
+    data: data,
+    timeout: 60000,
+  })
+}

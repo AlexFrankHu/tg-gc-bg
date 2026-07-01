@@ -172,4 +172,26 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         update tg_telethon_account set auto_reply = #{autoReply}, update_time = now() where (is_deleted = 0 OR is_deleted IS NULL)
     </update>
 
+    <update id="updateMessageCountsForActiveAccounts">
+        UPDATE tg_telethon_account a
+        INNER JOIN (
+            SELECT m.tg_account_id,
+                   COUNT(*) as total_count,
+                   SUM(CASE WHEN m.is_outgoing = 1 THEN 1 ELSE 0 END) as sent_count,
+                   SUM(CASE WHEN m.is_outgoing = 0 THEN 1 ELSE 0 END) as recv_count
+            FROM tg_chat_message m
+            WHERE m.tg_account_id IN (
+                SELECT DISTINCT c.tg_account_id
+                FROM tg_contact c
+                WHERE c.last_send_time >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                   OR c.last_receive_time >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+            )
+            GROUP BY m.tg_account_id
+        ) stats ON a.id = stats.tg_account_id
+        SET a.total_msg_count = stats.total_count,
+            a.sent_msg_count = stats.sent_count,
+            a.recv_msg_count = stats.recv_count,
+            a.update_time = NOW()
+    </update>
+
 </mapper>

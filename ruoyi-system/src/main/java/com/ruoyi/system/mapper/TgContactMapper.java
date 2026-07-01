@@ -14,4 +14,6 @@ public interface TgContactMapper
     public int deleteTgContactByIds(Integer[] ids);
     public int updateAutoReplyById(@Param("id") Integer id, @Param("autoReply") Boolean autoReply);
     public int updateAllAutoReply(@Param("autoReply") Boolean autoReply);
+
+    public int updateMessageCountsForActiveContacts();
 }

@@ -42,6 +42,9 @@ public class TgClusterNode extends BaseEntity
     /** 最大账号数 */
     private Integer maxAccountCount;
 
+    /** 节点类型 */
+    private String nodeType;
+
     /** 创建时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
@@ -79,6 +82,9 @@ public class TgClusterNode extends BaseEntity
 
     public Integer getMaxAccountCount() { return maxAccountCount; }
     public void setMaxAccountCount(Integer maxAccountCount) { this.maxAccountCount = maxAccountCount; }
+
+    public String getNodeType() { return nodeType; }
+    public void setNodeType(String nodeType) { this.nodeType = nodeType; }
 
     @Override
     public Date getCreateTime() { return createTime; }

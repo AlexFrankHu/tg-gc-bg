@@ -34,4 +34,6 @@ public interface TgTelethonAccountMapper
     public int updateStatusById(@Param("id") Integer id, @Param("status") String status);
 
     public int batchUpdateStatus(@Param("ids") List<Integer> ids, @Param("status") String status);
+
+    public int updateMessageCountsForActiveAccounts();
 }

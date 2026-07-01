@@ -16,4 +16,6 @@ public interface TgClusterNodeMapper
     public List<TgClusterNode> selectActiveNodes(@Param("minutes") int minutes);
 
     public int updateTgClusterNode(TgClusterNode tgClusterNode);
+
+    public List<TgClusterNode> selectOfflineNodes(@Param("minutes") int minutes);
 }

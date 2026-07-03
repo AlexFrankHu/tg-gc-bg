@@ -497,6 +497,17 @@ public class TgAccountConfigController extends BaseController
         return toAjax(tgTelethonAccountService.updateIsRestrictedById(id, isRestricted));
     }
 
+    @PreAuthorize("@ss.hasPermi('tg:account:edit')")
+    @PutMapping("/restricted/batch")
+    public AjaxResult batchUpdateIsRestricted(@org.springframework.web.bind.annotation.RequestBody java.util.Map<String, Object> params)
+    {
+        @SuppressWarnings("unchecked")
+        List<Integer> ids = (List<Integer>) params.get("ids");
+        Integer isRestricted = (Integer) params.get("isRestricted");
+        if (ids == null || ids.isEmpty()) return error("请选择账号");
+        return toAjax(tgTelethonAccountService.batchUpdateIsRestricted(ids, isRestricted));
+    }
+
     private String httpPost(String urlStr, String jsonBody) throws Exception
     {
         URL url = new URL(urlStr);

@@ -74,6 +74,9 @@
         <el-button type="warning" plain @click="handleAllAccountAutoReply(false)" v-hasPermi="['tg:account:edit']">全部关闭自动回复</el-button>
       </el-col>
       <el-col :span="1.5">
+        <el-button type="info" plain :disabled="multiple" @click="handleBatchUnrestrict" v-hasPermi="['tg:account:edit']">解除选中限制</el-button>
+      </el-col>
+      <el-col :span="1.5">
         <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['tg:account:remove']">删除</el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
@@ -313,7 +316,7 @@
 </template>
 
 <script setup name="Account">
-import { listAccount, getAccount, delAccount, triggerLogin, loginNoProxy, logoutAccount, getWsToken, loginBatch, logoutBatch, getProxyInfo, autoSelectProxy, manualSelectProxy, configProxy, updateAccountAutoReply, updateAllAccountAutoReply, updateAccountRestricted } from "@/api/tg/account";
+import { listAccount, getAccount, delAccount, triggerLogin, loginNoProxy, logoutAccount, getWsToken, loginBatch, logoutBatch, getProxyInfo, autoSelectProxy, manualSelectProxy, configProxy, updateAccountAutoReply, updateAllAccountAutoReply, updateAccountRestricted, batchUpdateAccountRestricted } from "@/api/tg/account";
 import { listAllBatch } from "@/api/tg/import";
 import { listAllProxyGroup, listProxyIp } from "@/api/tg/proxy";
 import { ArrowDown } from '@element-plus/icons-vue';
@@ -622,6 +625,15 @@ async function handleWebClient(row) {
   } catch (e) {
     proxy.$modal.msgError("获取token失败: " + (e.message || e));
   }
+}
+
+function handleBatchUnrestrict() {
+  proxy.$modal.confirm('确认要解除选中的 ' + ids.value.length + ' 个账号的限制状态吗？').then(() => {
+    batchUpdateAccountRestricted(ids.value, 0).then(() => {
+      proxy.$modal.msgSuccess('已解除限制');
+      getList();
+    });
+  }).catch(() => {});
 }
 
 function handleToggleRestricted(row) {

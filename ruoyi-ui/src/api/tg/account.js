@@ -140,3 +140,12 @@ export function updateAccountRestricted(id, isRestricted) {
     method: 'put'
   })
 }
+
+// 批量修改账号限制状态
+export function batchUpdateAccountRestricted(ids, isRestricted) {
+  return request({
+    url: '/tg/account/restricted/batch',
+    method: 'put',
+    data: { ids, isRestricted }
+  })
+}

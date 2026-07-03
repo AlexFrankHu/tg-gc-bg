@@ -27,6 +27,8 @@ public interface TgTelethonAccountMapper
 
     public int updateIsRestrictedById(@Param("id") Integer id, @Param("isRestricted") Integer isRestricted);
 
+    public int batchUpdateIsRestricted(@Param("ids") List<Integer> ids, @Param("isRestricted") Integer isRestricted);
+
     public int updateAllAutoReply(@Param("autoReply") Boolean autoReply);
 
     public List<TgTelethonAccount> selectUnassignedAccounts();

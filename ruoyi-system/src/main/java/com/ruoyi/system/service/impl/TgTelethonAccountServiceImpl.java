@@ -65,6 +65,12 @@ public class TgTelethonAccountServiceImpl implements ITgTelethonAccountService
     }
 
     @Override
+    public int batchUpdateIsRestricted(List<Integer> ids, Integer isRestricted)
+    {
+        return tgTelethonAccountMapper.batchUpdateIsRestricted(ids, isRestricted);
+    }
+
+    @Override
     public int updateAllAutoReply(Boolean autoReply)
     {
         return tgTelethonAccountMapper.updateAllAutoReply(autoReply);

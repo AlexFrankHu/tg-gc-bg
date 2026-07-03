@@ -490,6 +490,13 @@ public class TgAccountConfigController extends BaseController
         return toAjax(tgTelethonAccountService.updateAllAutoReply(autoReply));
     }
 
+    @PreAuthorize("@ss.hasPermi('tg:account:edit')")
+    @PutMapping("/restricted/{id}/{isRestricted}")
+    public AjaxResult updateIsRestricted(@PathVariable("id") Integer id, @PathVariable("isRestricted") Integer isRestricted)
+    {
+        return toAjax(tgTelethonAccountService.updateIsRestrictedById(id, isRestricted));
+    }
+
     private String httpPost(String urlStr, String jsonBody) throws Exception
     {
         URL url = new URL(urlStr);

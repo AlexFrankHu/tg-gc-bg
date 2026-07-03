@@ -723,6 +723,13 @@ public class TgImportController extends BaseController
     @GetMapping("/autoReplyLog")
     public TableDataInfo autoReplyLog(TgAutoReplyLog logQuery)
     {
+        // If friendNickname looks like a phone number, search friend_phone instead (indexed, much faster)
+        String friendInput = logQuery.getFriendNickname();
+        if (friendInput != null && !friendInput.isEmpty() && friendInput.matches("\\+?\\d+"))
+        {
+            logQuery.setFriendPhone(friendInput.replaceFirst("^\\+", ""));
+            logQuery.setFriendNickname(null);
+        }
         startPage();
         List<TgAutoReplyLog> list = autoReplyLogMapper.selectList(logQuery);
         return getDataTable(list);

@@ -81,7 +81,7 @@
 
     <el-table v-loading="loading" :data="accountList" @selection-change="handleSelectionChange" :border="true" style="width: 100%">
       <el-table-column type="selection" width="40" align="center" fixed="left" />
-      <el-table-column label="ID" align="center" prop="id" width="55" fixed="left" />
+      <el-table-column label="ID" align="center" prop="id" width="82" fixed="left" />
       <el-table-column label="手机号" align="center" prop="phone" width="120" fixed="left" show-overflow-tooltip />
       <el-table-column label="昵称" align="center" prop="nickname" width="100" show-overflow-tooltip />
       <el-table-column label="用户名" align="center" prop="username" width="100" show-overflow-tooltip>
@@ -116,7 +116,7 @@
       </el-table-column>
       <el-table-column label="限制" align="center" width="60">
         <template #default="scope">
-          <el-tag v-if="scope.row.isRestricted" type="danger" size="small">是</el-tag>
+          <el-tag v-if="scope.row.isRestricted" type="danger" size="small" style="cursor:pointer" @click="handleToggleRestricted(scope.row)">是</el-tag>
           <span v-else>-</span>
         </template>
       </el-table-column>
@@ -313,7 +313,7 @@
 </template>
 
 <script setup name="Account">
-import { listAccount, getAccount, delAccount, triggerLogin, loginNoProxy, logoutAccount, getWsToken, loginBatch, logoutBatch, getProxyInfo, autoSelectProxy, manualSelectProxy, configProxy, updateAccountAutoReply, updateAllAccountAutoReply } from "@/api/tg/account";
+import { listAccount, getAccount, delAccount, triggerLogin, loginNoProxy, logoutAccount, getWsToken, loginBatch, logoutBatch, getProxyInfo, autoSelectProxy, manualSelectProxy, configProxy, updateAccountAutoReply, updateAllAccountAutoReply, updateAccountRestricted } from "@/api/tg/account";
 import { listAllBatch } from "@/api/tg/import";
 import { listAllProxyGroup, listProxyIp } from "@/api/tg/proxy";
 import { ArrowDown } from '@element-plus/icons-vue';
@@ -622,6 +622,15 @@ async function handleWebClient(row) {
   } catch (e) {
     proxy.$modal.msgError("获取token失败: " + (e.message || e));
   }
+}
+
+function handleToggleRestricted(row) {
+  proxy.$modal.confirm('确认要解除账号 ' + row.phone + ' 的限制状态吗？').then(() => {
+    updateAccountRestricted(row.id, 0).then(() => {
+      proxy.$modal.msgSuccess('已解除限制');
+      row.isRestricted = 0;
+    });
+  }).catch(() => {});
 }
 
 function handleToggleAccountAutoReply(row) {

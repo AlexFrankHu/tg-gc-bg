@@ -132,3 +132,11 @@ export function updateAllAccountAutoReply(autoReply) {
     method: 'put'
   })
 }
+
+// 修改账号限制状态
+export function updateAccountRestricted(id, isRestricted) {
+  return request({
+    url: '/tg/account/restricted/' + id + '/' + isRestricted,
+    method: 'put'
+  })
+}

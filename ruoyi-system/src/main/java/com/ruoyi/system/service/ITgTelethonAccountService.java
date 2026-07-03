@@ -22,6 +22,8 @@ public interface ITgTelethonAccountService
 
     public int updateAutoReplyById(Integer id, Boolean autoReply);
 
+    public int updateIsRestrictedById(Integer id, Integer isRestricted);
+
     public int updateAllAutoReply(Boolean autoReply);
 
     public List<TgTelethonAccount> selectUnassignedAccounts();

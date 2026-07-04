@@ -1,10 +1,8 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="80px">
-      <el-form-item label="所属账号" prop="tgAccountId">
-        <el-select v-model="queryParams.tgAccountId" placeholder="请选择账号" clearable style="width: 200px">
-          <el-option v-for="item in accountList" :key="item.id" :label="item.phone + (item.nickname ? ' (' + item.nickname + ')' : '')" :value="item.id" />
-        </el-select>
+      <el-form-item label="所属账号" prop="phone">
+        <el-input v-model="queryParams.phone" placeholder="请输入账号手机号" clearable style="width: 200px" @keyup.enter="handleQuery" />
       </el-form-item>
       <el-form-item label="聊天ID" prop="chatId">
         <el-input v-model="queryParams.chatId" placeholder="请输入聊天ID" clearable style="width: 160px" @keyup.enter="handleQuery" />
@@ -49,7 +47,7 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="所属账号" align="center" width="160">
         <template #default="scope">
-          {{ getAccountPhone(scope.row.tgAccountId) }}
+          {{ scope.row.accountPhone || scope.row.tgAccountId }}
         </template>
       </el-table-column>
       <el-table-column label="聊天ID" align="center" prop="chatId" width="160" />
@@ -129,12 +127,10 @@
 
 <script setup name="ChatMessage">
 import { listChatMessage, getChatMessage, delChatMessage } from "@/api/tg/chatMessage";
-import { listAccount } from "@/api/tg/account";
 
 const { proxy } = getCurrentInstance();
 
 const messageList = ref([]);
-const accountList = ref([]);
 const loading = ref(true);
 const showSearch = ref(true);
 const ids = ref([]);
@@ -147,7 +143,7 @@ const dateRange = ref([]);
 const queryParams = ref({
   pageNum: 1,
   pageSize: 20,
-  tgAccountId: undefined,
+  phone: undefined,
   chatId: undefined,
   contentType: undefined,
   textContent: undefined,
@@ -166,17 +162,6 @@ function getList() {
     total.value = response.total;
     loading.value = false;
   });
-}
-
-function getAccountList() {
-  listAccount({ pageNum: 1, pageSize: 1000 }).then(response => {
-    accountList.value = response.rows;
-  });
-}
-
-function getAccountPhone(accountId) {
-  const account = accountList.value.find(a => a.id === accountId);
-  return account ? account.phone : accountId;
 }
 
 function getContentTypeLabel(type) {
@@ -228,6 +213,5 @@ function handleDelete(row) {
   }).catch(() => {});
 }
 
-getAccountList();
 getList();
 </script>

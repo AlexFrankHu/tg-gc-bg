@@ -41,6 +41,17 @@ public class TgChatMessage extends BaseEntity
     /** 账号所属节点ID */
     private String nodeId;
 
+    /** 查询条件：账号手机号 */
+    private String phone;
+
+    /** 展示：账号手机号 */
+    private String accountPhone;
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public String getAccountPhone() { return accountPhone; }
+    public void setAccountPhone(String accountPhone) { this.accountPhone = accountPhone; }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Integer getTgAccountId() { return tgAccountId; }

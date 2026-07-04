@@ -26,6 +26,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="thumbnailFileId" column="thumbnail_file_id"/>
         <result property="createTime"      column="create_time"      />
         <result property="nodeId"          column="node_id"          />
+        <result property="accountPhone"    column="account_phone"    />
     </resultMap>
 
     <sql id="selectTgChatMessageVo">
@@ -42,34 +43,44 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
     <select id="selectTgChatMessageList" parameterType="TgChatMessage" resultMap="TgChatMessageResult">
-        <include refid="selectTgChatMessageVo"/>
+        select m.id, m.tg_account_id, m.chat_id, m.message_id, m.sender_user_id, m.sender_chat_id,
+               m.sender_name, m.is_outgoing, m.send_time, m.content_type, m.text_content,
+               m.media_file_id, m.media_file_size, m.media_mime_type, m.media_file_name,
+               m.media_duration, m.media_width, m.media_height, m.thumbnail_file_id, m.create_time,
+               a.phone as account_phone
+        from tg_chat_message m
+        left join tg_telethon_account a on a.id = m.tg_account_id
         <where>
+            AND m.chat_id &gt;= 0
             <if test="tgAccountId != null">
-                AND tg_account_id = #{tgAccountId}
+                AND m.tg_account_id = #{tgAccountId}
+            </if>
+            <if test="phone != null and phone != ''">
+                AND m.tg_account_id IN (SELECT id FROM tg_telethon_account WHERE phone like concat(#{phone}, '%'))
             </if>
             <if test="chatId != null">
-                AND chat_id = #{chatId}
+                AND m.chat_id = #{chatId}
             </if>
             <if test="senderUserId != null">
-                AND sender_user_id = #{senderUserId}
+                AND m.sender_user_id = #{senderUserId}
             </if>
             <if test="contentType != null and contentType != ''">
-                AND content_type = #{contentType}
+                AND m.content_type = #{contentType}
             </if>
             <if test="textContent != null and textContent != ''">
-                AND text_content like concat('%', #{textContent}, '%')
+                AND m.text_content like concat('%', #{textContent}, '%')
             </if>
             <if test="isOutgoing != null">
-                AND is_outgoing = #{isOutgoing}
+                AND m.is_outgoing = #{isOutgoing}
             </if>
             <if test="params.beginSendTime != null and params.beginSendTime != ''">
-                AND send_time &gt;= #{params.beginSendTime}
+                AND m.send_time &gt;= #{params.beginSendTime}
             </if>
             <if test="params.endSendTime != null and params.endSendTime != ''">
-                AND send_time &lt;= #{params.endSendTime}
+                AND m.send_time &lt;= #{params.endSendTime}
             </if>
         </where>
-        order by send_time desc
+        order by m.send_time desc
     </select>
 
     <insert id="insertTgChatMessage" parameterType="TgChatMessage" useGeneratedKeys="true" keyProperty="id">

@@ -7,9 +7,21 @@
       <el-form-item label="好友昵称" prop="friendNickname">
         <el-input v-model="queryParams.friendNickname" placeholder="请输入好友昵称" clearable style="width: 200px" @keyup.enter="handleQuery" />
       </el-form-item>
+      <el-form-item label="时间">
+        <el-date-picker
+          v-model="dateRange"
+          type="datetimerange"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          range-separator="-"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+          style="width: 360px"
+        />
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
         <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+        <el-button type="info" plain icon="Download" @click="handleExport">导出</el-button>
       </el-form-item>
     </el-form>
 
@@ -45,10 +57,13 @@
 <script setup name="SendFailLog">
 import { listSendFailLog } from "@/api/tg/import";
 
+const { proxy } = getCurrentInstance();
+
 const showSearch = ref(true);
 const logList = ref([]);
 const loading = ref(true);
 const total = ref(0);
+const dateRange = ref([]);
 
 const queryParams = ref({
   pageNum: 1,
@@ -59,7 +74,7 @@ const queryParams = ref({
 
 function getList() {
   loading.value = true;
-  listSendFailLog(queryParams.value).then(response => {
+  listSendFailLog(proxy.addDateRange(queryParams.value, dateRange.value)).then(response => {
     logList.value = response.rows;
     total.value = response.total;
     loading.value = false;
@@ -72,9 +87,19 @@ function handleQuery() {
 }
 
 function resetQuery() {
+  dateRange.value = [];
   queryParams.value.phone = undefined;
   queryParams.value.friendNickname = undefined;
   handleQuery();
+}
+
+function handleExport() {
+  proxy.$modal.confirm('是否确认导出当前筛选条件的发送失败日志数据？').then(() => {
+    const params = { ...proxy.addDateRange(queryParams.value, dateRange.value) };
+    delete params.pageNum;
+    delete params.pageSize;
+    proxy.download('tg/import/sendFailLog/export', params, '发送失败日志.xlsx', { timeout: 300000 });
+  }).catch(() => {});
 }
 
 getList();

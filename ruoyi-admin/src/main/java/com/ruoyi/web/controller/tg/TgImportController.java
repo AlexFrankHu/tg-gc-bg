@@ -717,6 +717,34 @@ public class TgImportController extends BaseController
     }
 
     /**
+     * 导出发送失败日志
+     */
+    @PreAuthorize("@ss.hasPermi('tg:import:list')")
+    @PostMapping("/sendFailLog/export")
+    public void exportSendFailLog(jakarta.servlet.http.HttpServletResponse response, TgSendFailLog logQuery)
+    {
+        List<TgSendFailLog> list = sendFailLogMapper.selectList(logQuery);
+        List<com.ruoyi.system.domain.vo.TgSendFailLogExport> exportList = new ArrayList<>();
+        for (TgSendFailLog l : list)
+        {
+            com.ruoyi.system.domain.vo.TgSendFailLogExport vo = new com.ruoyi.system.domain.vo.TgSendFailLogExport();
+            vo.setId(l.getId());
+            vo.setPhone(l.getPhone());
+            vo.setNickname(l.getNickname());
+            vo.setFriendNickname(l.getFriendNickname());
+            vo.setFriendPhone(l.getFriendPhone());
+            vo.setContentType(l.getContentType());
+            vo.setContent(l.getContent());
+            vo.setErrorReason(l.getErrorReason());
+            vo.setNodeId(l.getNodeId());
+            vo.setSendTime(l.getSendTime());
+            exportList.add(vo);
+        }
+        com.ruoyi.common.utils.poi.ExcelUtil<com.ruoyi.system.domain.vo.TgSendFailLogExport> util = new com.ruoyi.common.utils.poi.ExcelUtil<>(com.ruoyi.system.domain.vo.TgSendFailLogExport.class);
+        util.exportExcel(response, exportList, "发送失败日志");
+    }
+
+    /**
      * 查询自动回复日志列表
      */
     @PreAuthorize("@ss.hasPermi('tg:import:list')")

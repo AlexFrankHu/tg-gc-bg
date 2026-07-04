@@ -25,6 +25,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <where>
             <if test="phone != null and phone != ''">AND phone like concat('%', #{phone}, '%')</if>
             <if test="friendNickname != null and friendNickname != ''">AND friend_nickname like concat('%', #{friendNickname}, '%')</if>
+            <if test="params.beginTime != null and params.beginTime != ''">AND send_time &gt;= #{params.beginTime}</if>
+            <if test="params.endTime != null and params.endTime != ''">AND send_time &lt;= #{params.endTime}</if>
         </where>
         order by id desc
     </select>

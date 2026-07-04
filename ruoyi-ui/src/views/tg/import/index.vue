@@ -194,7 +194,7 @@ const assignContactLoading = ref(false);
 const assignContactRow = ref(null);
 const contactBatchOptions = ref([]);
 const assignMode = ref("average");
-const assignFixedCount = ref(10);
+const assignFixedCount = ref(1);
 const addMethod = ref("one_by_one");
 
 const queryParams = ref({

@@ -30,6 +30,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="friendPhone != null and friendPhone != ''">AND friend_phone like concat(#{friendPhone}, '%')</if>
             <if test="sendResult != null and sendResult != ''">AND send_result = #{sendResult}</if>
             <if test="triggerType != null and triggerType != ''">AND trigger_type = #{triggerType}</if>
+            <if test="params.beginTime != null and params.beginTime != ''">AND create_time &gt;= #{params.beginTime}</if>
+            <if test="params.endTime != null and params.endTime != ''">AND create_time &lt;= #{params.endTime}</if>
         </where>
         order by id desc
     </select>

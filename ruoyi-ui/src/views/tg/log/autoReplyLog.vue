@@ -21,6 +21,17 @@
           <el-option label="定时轮询" value="polling" />
         </el-select>
       </el-form-item>
+      <el-form-item label="时间">
+        <el-date-picker
+          v-model="dateRange"
+          type="datetimerange"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          range-separator="-"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+          style="width: 360px"
+        />
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
         <el-button icon="Refresh" @click="resetQuery">重置</el-button>
@@ -78,6 +89,7 @@ const showSearch = ref(true);
 const logList = ref([]);
 const loading = ref(true);
 const total = ref(0);
+const dateRange = ref([]);
 
 const queryParams = ref({
   pageNum: 1,
@@ -90,7 +102,7 @@ const queryParams = ref({
 
 function getList() {
   loading.value = true;
-  listAutoReplyLog(queryParams.value).then(response => {
+  listAutoReplyLog(proxy.addDateRange(queryParams.value, dateRange.value)).then(response => {
     logList.value = response.rows;
     total.value = response.total;
     loading.value = false;
@@ -103,6 +115,7 @@ function handleQuery() {
 }
 
 function resetQuery() {
+  dateRange.value = [];
   queryParams.value.accountPhone = undefined;
   queryParams.value.friendNickname = undefined;
   queryParams.value.sendResult = undefined;
@@ -111,8 +124,8 @@ function resetQuery() {
 }
 
 function handleExport() {
-  proxy.$modal.confirm('是否确认导出自动回复日志数据？').then(() => {
-    const params = { ...queryParams.value };
+  proxy.$modal.confirm('是否确认导出当前筛选条件的自动回复日志数据？').then(() => {
+    const params = { ...proxy.addDateRange(queryParams.value, dateRange.value) };
     delete params.pageNum;
     delete params.pageSize;
     proxy.download('tg/import/autoReplyLog/export', params, '自动回复日志.xlsx', { timeout: 300000 });

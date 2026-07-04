@@ -770,6 +770,12 @@ public class TgImportController extends BaseController
     @PostMapping("/autoReplyLog/export")
     public void exportAutoReplyLog(jakarta.servlet.http.HttpServletResponse response, TgAutoReplyLog logQuery)
     {
+        String friendInput = logQuery.getFriendNickname();
+        if (friendInput != null && !friendInput.isEmpty() && friendInput.matches("\\+?\\d+"))
+        {
+            logQuery.setFriendPhone(friendInput.replaceFirst("^\\+", ""));
+            logQuery.setFriendNickname(null);
+        }
         List<TgAutoReplyLog> list = autoReplyLogMapper.selectList(logQuery);
         List<com.ruoyi.system.domain.vo.TgAutoReplyLogExport> exportList = new ArrayList<>();
         for (TgAutoReplyLog l : list)

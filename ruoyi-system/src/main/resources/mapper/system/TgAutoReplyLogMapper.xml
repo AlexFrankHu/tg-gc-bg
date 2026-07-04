@@ -27,7 +27,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <where>
             <if test="accountPhone != null and accountPhone != ''">AND account_phone like concat(#{accountPhone}, '%')</if>
             <if test="friendNickname != null and friendNickname != ''">AND friend_nickname like concat('%', #{friendNickname}, '%')</if>
-            <if test="friendPhone != null and friendPhone != ''">AND friend_phone like concat(#{friendPhone}, '%')</if>
+            <if test="friendPhone != null and friendPhone != ''">AND (friend_phone like concat(#{friendPhone}, '%') OR friend_phone like concat('+', #{friendPhone}, '%'))</if>
             <if test="sendResult != null and sendResult != ''">AND send_result = #{sendResult}</if>
             <if test="triggerType != null and triggerType != ''">AND trigger_type = #{triggerType}</if>
             <if test="params.beginTime != null and params.beginTime != ''">AND create_time &gt;= #{params.beginTime}</if>

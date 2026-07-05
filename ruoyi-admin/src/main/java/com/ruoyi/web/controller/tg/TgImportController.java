@@ -711,6 +711,13 @@ public class TgImportController extends BaseController
     @GetMapping("/sendFailLog")
     public TableDataInfo sendFailLog(TgSendFailLog logQuery)
     {
+        // If the 好友 input looks like a phone number, search by friend phone instead of nickname
+        String friendInput = logQuery.getFriendNickname();
+        if (friendInput != null && !friendInput.isEmpty() && friendInput.matches("\\+?\\d+"))
+        {
+            logQuery.setFriendPhone(friendInput.replaceFirst("^\\+", ""));
+            logQuery.setFriendNickname(null);
+        }
         startPage();
         List<TgSendFailLog> list = sendFailLogMapper.selectList(logQuery);
         return getDataTable(list);
@@ -723,6 +730,12 @@ public class TgImportController extends BaseController
     @PostMapping("/sendFailLog/export")
     public void exportSendFailLog(jakarta.servlet.http.HttpServletResponse response, TgSendFailLog logQuery)
     {
+        String friendInput = logQuery.getFriendNickname();
+        if (friendInput != null && !friendInput.isEmpty() && friendInput.matches("\\+?\\d+"))
+        {
+            logQuery.setFriendPhone(friendInput.replaceFirst("^\\+", ""));
+            logQuery.setFriendNickname(null);
+        }
         List<TgSendFailLog> list = sendFailLogMapper.selectList(logQuery);
         List<com.ruoyi.system.domain.vo.TgSendFailLogExport> exportList = new ArrayList<>();
         for (TgSendFailLog l : list)

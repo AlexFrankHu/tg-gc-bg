@@ -21,14 +21,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <select id="selectList" parameterType="TgSendFailLog" resultMap="TgSendFailLogResult">
-        select * from tg_send_fail_log
+        select s.id, s.phone, s.tg_account_id, s.user_id, s.content_type, s.content,
+               s.error_reason, s.send_time, s.node_id, s.create_time,
+               a.nickname AS nickname,
+               c.nickname AS friend_nickname,
+               c.phone_number AS friend_phone
+        from tg_send_fail_log s
+        left join tg_telethon_account a on a.id = s.tg_account_id
+        left join tg_contact c on c.tg_account_id = s.tg_account_id and c.user_id = s.user_id
         <where>
-            <if test="phone != null and phone != ''">AND phone like concat('%', #{phone}, '%')</if>
-            <if test="friendNickname != null and friendNickname != ''">AND friend_nickname like concat('%', #{friendNickname}, '%')</if>
-            <if test="params.beginTime != null and params.beginTime != ''">AND send_time &gt;= #{params.beginTime}</if>
-            <if test="params.endTime != null and params.endTime != ''">AND send_time &lt;= #{params.endTime}</if>
+            <if test="phone != null and phone != ''">AND s.phone like concat(#{phone}, '%')</if>
+            <if test="friendNickname != null and friendNickname != ''">AND c.nickname like concat('%', #{friendNickname}, '%')</if>
+            <if test="friendPhone != null and friendPhone != ''">AND (c.phone_number like concat(#{friendPhone}, '%') OR c.phone_number like concat('+', #{friendPhone}, '%'))</if>
+            <if test="params.beginTime != null and params.beginTime != ''">AND s.send_time &gt;= #{params.beginTime}</if>
+            <if test="params.endTime != null and params.endTime != ''">AND s.send_time &lt;= #{params.endTime}</if>
         </where>
-        order by id desc
+        order by s.id desc
     </select>
 
 </mapper>

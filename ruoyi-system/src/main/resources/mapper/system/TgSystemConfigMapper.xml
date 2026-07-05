@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgSystemConfigMapper">
+
+    <resultMap type="TgSystemConfig" id="TgSystemConfigResult">
+        <result property="id"          column="id"           />
+        <result property="configKey"   column="config_key"   />
+        <result property="configName"  column="config_name"  />
+        <result property="configValue" column="config_value" />
+        <result property="createTime"  column="create_time"  />
+        <result property="updateTime"  column="update_time"  />
+    </resultMap>
+
+    <sql id="selectTgSystemConfigVo">
+        select id, config_key, config_name, config_value, create_time, update_time
+        from tg_system_config
+    </sql>
+
+    <select id="selectTgSystemConfigList" parameterType="TgSystemConfig" resultMap="TgSystemConfigResult">
+        <include refid="selectTgSystemConfigVo"/>
+        <where>
+            <if test="configKey != null and configKey != ''">
+                AND config_key = #{configKey}
+            </if>
+            <if test="configName != null and configName != ''">
+                AND config_name like concat('%', #{configName}, '%')
+            </if>
+        </where>
+        order by id asc
+    </select>
+
+    <select id="selectTgSystemConfigById" parameterType="Integer" resultMap="TgSystemConfigResult">
+        <include refid="selectTgSystemConfigVo"/>
+        where id = #{id}
+    </select>
+
+    <update id="updateConfigValue" parameterType="TgSystemConfig">
+        update tg_system_config
+        set config_value = #{configValue}, update_time = now()
+        where id = #{id}
+    </update>
+
+</mapper>

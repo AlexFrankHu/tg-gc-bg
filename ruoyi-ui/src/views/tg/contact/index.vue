@@ -128,6 +128,11 @@
             <el-tag :type="scope.row.autoReply ? 'success' : 'danger'" size="small">{{ scope.row.autoReply ? '开启' : '关闭' }}</el-tag>
           </template>
         </el-table-column>
+        <el-table-column label="注销" align="center" min-width="80">
+          <template #default="scope">
+            <el-tag :type="scope.row.isDeregistered ? 'danger' : 'info'" size="small">{{ scope.row.isDeregistered ? '是' : '否' }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="添加时间" align="center" prop="createTime" min-width="170" />
         <el-table-column label="更新时间" align="center" prop="updateTime" min-width="170" />
         <el-table-column label="操作" align="center" fixed="right" min-width="480">

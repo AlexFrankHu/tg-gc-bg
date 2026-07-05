@@ -40,6 +40,9 @@ public class TgContact extends BaseEntity
 
     private Boolean autoReply;
 
+    /** 是否已注销(对方账号被删除) */
+    private Boolean isDeregistered;
+
     /** 消息总数 */
     private Integer totalMsgCount;
 
@@ -106,6 +109,8 @@ public class TgContact extends BaseEntity
     public void setCreateTime(Date createTime) { this.createTime = createTime; }
     public Boolean getAutoReply() { return autoReply; }
     public void setAutoReply(Boolean autoReply) { this.autoReply = autoReply; }
+    public Boolean getIsDeregistered() { return isDeregistered; }
+    public void setIsDeregistered(Boolean isDeregistered) { this.isDeregistered = isDeregistered; }
     public Integer getTotalMsgCount() { return totalMsgCount; }
     public void setTotalMsgCount(Integer totalMsgCount) { this.totalMsgCount = totalMsgCount; }
     public Integer getAccountSentCount() { return accountSentCount; }

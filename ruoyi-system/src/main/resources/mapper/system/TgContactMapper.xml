@@ -26,6 +26,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="lastSendTime"    column="last_send_time"   />
         <result property="lastReceiveTime" column="last_receive_time"/>
         <result property="autoReply"       column="auto_reply"       />
+        <result property="isDeregistered"  column="is_deregistered"  />
         <result property="totalMsgCount"  column="total_msg_count"  />
         <result property="accountSentCount" column="account_sent_count" />
         <result property="friendSentCount" column="friend_sent_count" />
@@ -38,7 +39,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select id, tg_account_id, user_id, first_name, last_name, nickname, username,
                phone_number, is_mutual, is_bot, is_premium, is_verified, user_type,
                restriction_reason, bio, photo_small_file_id, photo_big_file_id,
-               last_online_time, last_send_time, last_receive_time, auto_reply,
+               last_online_time, last_send_time, last_receive_time, auto_reply, is_deregistered,
                total_msg_count, account_sent_count, friend_sent_count, node_id, create_time, update_time
         from tg_contact
     </sql>

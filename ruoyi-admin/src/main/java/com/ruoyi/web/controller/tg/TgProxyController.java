@@ -421,6 +421,146 @@ public class TgProxyController extends BaseController
     }
 
     /**
+     * 导入proxys.io代理IP组
+     * 格式: username:password@host:port (每行一个, 默认socks5协议)
+     */
+    @PreAuthorize("@ss.hasPermi('tg:proxy:add')")
+    @PostMapping("/importProxysIo")
+    public AjaxResult importProxysIo(@RequestParam("file") MultipartFile file,
+                                     @RequestParam("title") String title,
+                                     @RequestParam("country") String country,
+                                     @RequestParam(value = "expireTime", required = false) String expireTime,
+                                     @RequestParam(value = "maxBindable", defaultValue = "1") Integer maxBindable)
+    {
+        try
+        {
+            List<String> lines = new ArrayList<>();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)))
+            {
+                String line;
+                while ((line = reader.readLine()) != null)
+                {
+                    line = line.trim();
+                    if (!line.isEmpty())
+                    {
+                        lines.add(line);
+                    }
+                }
+            }
+
+            if (lines.isEmpty())
+            {
+                return error("文件中没有有效的代理IP数据");
+            }
+
+            // Parse proxys.io format: username:password@host:port
+            List<TgProxyIp> proxyIps = new ArrayList<>();
+            List<String> errors = new ArrayList<>();
+            for (int i = 0; i < lines.size(); i++)
+            {
+                String proxyLine = lines.get(i);
+                int atIdx = proxyLine.indexOf('@');
+                if (atIdx <= 0)
+                {
+                    errors.add("第" + (i + 1) + "行格式错误(缺少@符号): " + proxyLine);
+                    continue;
+                }
+                String userPass = proxyLine.substring(0, atIdx);
+                String hostPort = proxyLine.substring(atIdx + 1);
+                int colonIdx = userPass.indexOf(':');
+                if (colonIdx <= 0)
+                {
+                    errors.add("第" + (i + 1) + "行格式错误(用户名密码格式错误): " + proxyLine);
+                    continue;
+                }
+                String username = userPass.substring(0, colonIdx).trim();
+                String password = userPass.substring(colonIdx + 1).trim();
+                int hostColonIdx = hostPort.lastIndexOf(':');
+                if (hostColonIdx <= 0)
+                {
+                    errors.add("第" + (i + 1) + "行格式错误(主机端口格式错误): " + proxyLine);
+                    continue;
+                }
+                String host = hostPort.substring(0, hostColonIdx).trim();
+                String portStr = hostPort.substring(hostColonIdx + 1).trim();
+                try
+                {
+                    int port = Integer.parseInt(portStr);
+                    TgProxyIp ip = new TgProxyIp();
+                    ip.setProtocol("socks5");
+                    ip.setUsername(username);
+                    ip.setPassword(password);
+                    ip.setHost(host);
+                    ip.setPort(port);
+                    ip.setProxyUrl("socks5://" + username + ":" + password + "@" + host + ":" + port);
+                    ip.setMaxBindable(maxBindable);
+                    proxyIps.add(ip);
+                }
+                catch (NumberFormatException e)
+                {
+                    errors.add("第" + (i + 1) + "行端口格式错误: " + proxyLine);
+                }
+            }
+
+            if (proxyIps.isEmpty())
+            {
+                return error("没有解析到有效的代理IP。" + (errors.isEmpty() ? "" : "错误: " + String.join("; ", errors)));
+            }
+
+            // Create group
+            String groupNo = UUID.randomUUID().toString().replace("-", "");
+            TgProxyGroup group = new TgProxyGroup();
+            group.setGroupNo(groupNo);
+            group.setTitle(title);
+            group.setCountry(country);
+            group.setMaxBindable(maxBindable);
+            group.setTotalCount(proxyIps.size());
+            group.setImportTime(new Date());
+
+            if (expireTime != null && !expireTime.isEmpty())
+            {
+                try
+                {
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    group.setExpireTime(sdf.parse(expireTime));
+                }
+                catch (Exception e)
+                {
+                    try
+                    {
+                        java.text.SimpleDateFormat sdf2 = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                        group.setExpireTime(sdf2.parse(expireTime));
+                    }
+                    catch (Exception e2)
+                    {
+                        // Use default
+                    }
+                }
+            }
+
+            proxyGroupService.insertTgProxyGroup(group);
+
+            for (TgProxyIp ip : proxyIps)
+            {
+                ip.setGroupNo(groupNo);
+            }
+            proxyIpService.batchInsertTgProxyIp(proxyIps);
+
+            String msg = "导入成功，共 " + proxyIps.size() + " 个代理IP";
+            if (!errors.isEmpty())
+            {
+                msg += "（" + errors.size() + " 行解析失败）";
+            }
+            return success(msg);
+        }
+        catch (Exception e)
+        {
+            log.error("导入proxys.io代理IP失败", e);
+            return error("导入失败: " + e.getMessage());
+        }
+    }
+
+    /**
      * IP组列表
      */
     @PreAuthorize("@ss.hasPermi('tg:proxy:list')")

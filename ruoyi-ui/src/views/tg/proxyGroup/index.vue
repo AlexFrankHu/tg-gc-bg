@@ -26,6 +26,9 @@
         <el-button type="warning" icon="Upload" @click="handleImportProxy">导入proxy代理</el-button>
       </el-col>
       <el-col :span="1.5">
+        <el-button type="info" icon="Upload" @click="handleImportProxysIo">导入proxys.io代理</el-button>
+      </el-col>
+      <el-col :span="1.5">
         <el-button type="danger" icon="Delete" :disabled="multiple" @click="handleDelete">删除</el-button>
       </el-col>
     </el-row>
@@ -195,6 +198,46 @@
       </template>
     </el-dialog>
 
+    <!-- 导入proxys.io代理对话框 -->
+    <el-dialog v-model="proxysIoVisible" title="导入proxys.io代理" width="550px" append-to-body>
+      <el-form :model="proxysIoForm" label-width="120px" :rules="importRules" ref="proxysIoFormRef">
+        <el-form-item label="标题" prop="title">
+          <el-input v-model="proxysIoForm.title" placeholder="请输入IP组标题" />
+        </el-form-item>
+        <el-form-item label="国家" prop="country">
+          <el-select v-model="proxysIoForm.country" placeholder="请选择国家" filterable style="width: 100%">
+            <el-option v-for="c in countryOptions" :key="c" :label="c" :value="c" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="到期时间" prop="expireTime">
+          <el-date-picker v-model="proxysIoForm.expireTime" type="datetime" placeholder="选择到期时间" value-format="YYYY-MM-DD HH:mm:ss" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="单IP最大绑定数" prop="maxBindable">
+          <el-input-number v-model="proxysIoForm.maxBindable" :min="1" :max="100" />
+        </el-form-item>
+        <el-form-item label="代理IP文件" prop="file">
+          <el-upload
+            ref="proxysIoUploadRef"
+            :auto-upload="false"
+            :limit="1"
+            accept=".txt,.text"
+            :on-change="handleProxysIoFileChange"
+          >
+            <el-button type="primary">选择文件</el-button>
+            <template #tip>
+              <div class="el-upload__tip">
+                文本文件，每行一个代理IP，格式: username:password@host:port（默认socks5协议）
+              </div>
+            </template>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="proxysIoVisible = false">取消</el-button>
+        <el-button type="primary" :loading="proxysIoLoading" @click="submitProxysIo">确认导入</el-button>
+      </template>
+    </el-dialog>
+
     <!-- 编辑IP组对话框 -->
     <el-dialog v-model="editVisible" title="编辑IP组" width="500px" append-to-body>
       <el-form :model="editForm" label-width="120px">
@@ -222,7 +265,7 @@
 </template>
 
 <script setup name="ProxyGroup">
-import { listProxyGroup, updateProxyGroup, delProxyGroup, importProxy, importIpflyProxy, importProxyFormat } from "@/api/tg/proxy";
+import { listProxyGroup, updateProxyGroup, delProxyGroup, importProxy, importIpflyProxy, importProxyFormat, importProxysIo } from "@/api/tg/proxy";
 
 const { proxy } = getCurrentInstance();
 const router = useRouter();
@@ -243,6 +286,9 @@ const ipflyFile = ref(null);
 const proxyVisible = ref(false);
 const proxyLoading = ref(false);
 const proxyFile = ref(null);
+const proxysIoVisible = ref(false);
+const proxysIoLoading = ref(false);
+const proxysIoFile = ref(null);
 const editVisible = ref(false);
 
 const countryOptions = [
@@ -280,6 +326,12 @@ const ipflyForm = reactive({
   maxBindable: 1,
 });
 const proxyForm = reactive({
+  title: "",
+  country: "",
+  expireTime: "2099-12-31 23:59:59",
+  maxBindable: 1,
+});
+const proxysIoForm = reactive({
   title: "",
   country: "",
   expireTime: "2099-12-31 23:59:59",
@@ -413,6 +465,45 @@ function submitProxy() {
       proxy.$modal.msgError("导入失败: " + (err.message || err));
     }).finally(() => {
       proxyLoading.value = false;
+    });
+  });
+}
+
+function handleImportProxysIo() {
+  proxysIoForm.title = "";
+  proxysIoForm.country = "";
+  proxysIoForm.expireTime = "2099-12-31 23:59:59";
+  proxysIoForm.maxBindable = 1;
+  proxysIoFile.value = null;
+  proxysIoVisible.value = true;
+}
+
+function handleProxysIoFileChange(file) {
+  proxysIoFile.value = file.raw;
+}
+
+function submitProxysIo() {
+  proxy.$refs.proxysIoFormRef.validate(valid => {
+    if (!valid) return;
+    if (!proxysIoFile.value) {
+      proxy.$modal.msgWarning("请选择代理IP文件");
+      return;
+    }
+    proxysIoLoading.value = true;
+    const formData = new FormData();
+    formData.append("file", proxysIoFile.value);
+    formData.append("title", proxysIoForm.title);
+    formData.append("country", proxysIoForm.country);
+    formData.append("expireTime", proxysIoForm.expireTime || "");
+    formData.append("maxBindable", proxysIoForm.maxBindable);
+    importProxysIo(formData).then(res => {
+      proxy.$modal.msgSuccess(res.msg || "导入成功");
+      proxysIoVisible.value = false;
+      getList();
+    }).catch(err => {
+      proxy.$modal.msgError("导入失败: " + (err.message || err));
+    }).finally(() => {
+      proxysIoLoading.value = false;
     });
   });
 }

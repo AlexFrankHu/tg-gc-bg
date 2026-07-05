@@ -77,3 +77,14 @@ export function importProxyFormat(data) {
     timeout: 60000,
   })
 }
+
+// 导入proxys.io代理 (username:password@host:port)
+export function importProxysIo(data) {
+  return request({
+    url: '/tg/proxy/importProxysIo',
+    method: 'post',
+    headers: { 'Content-Type': 'multipart/form-data' },
+    data: data,
+    timeout: 60000,
+  })
+}

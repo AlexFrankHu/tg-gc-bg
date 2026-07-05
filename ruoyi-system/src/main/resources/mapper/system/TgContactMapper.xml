@@ -166,12 +166,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <update id="updateMessageCountsForActiveContacts">
         UPDATE tg_contact c
         INNER JOIN (
+            SELECT DISTINCT c2.tg_account_id
+            FROM tg_contact c2
+            WHERE c2.last_send_time >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+               OR c2.last_receive_time >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        ) act ON c.tg_account_id = act.tg_account_id
+        LEFT JOIN (
             SELECT m.tg_account_id, m.chat_id,
                    COUNT(*) as total_count,
                    SUM(CASE WHEN m.is_outgoing = 1 THEN 1 ELSE 0 END) as account_sent,
                    SUM(CASE WHEN m.is_outgoing = 0 THEN 1 ELSE 0 END) as friend_sent
             FROM tg_chat_message m
             WHERE m.chat_id &gt;= 0
+              AND m.chat_id NOT IN (777000)
               AND m.tg_account_id IN (
                 SELECT DISTINCT c2.tg_account_id
                 FROM tg_contact c2
@@ -180,11 +187,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             )
             GROUP BY m.tg_account_id, m.chat_id
         ) stats ON c.tg_account_id = stats.tg_account_id AND c.user_id = stats.chat_id
-            AND (c.is_bot IS NULL OR c.is_bot = 0)
-        SET c.total_msg_count = stats.total_count,
-            c.account_sent_count = stats.account_sent,
-            c.friend_sent_count = stats.friend_sent,
+        SET c.total_msg_count = IFNULL(stats.total_count, 0),
+            c.account_sent_count = IFNULL(stats.account_sent, 0),
+            c.friend_sent_count = IFNULL(stats.friend_sent, 0),
             c.update_time = NOW()
+        WHERE (c.is_bot IS NULL OR c.is_bot = 0)
     </update>
 
 </mapper>

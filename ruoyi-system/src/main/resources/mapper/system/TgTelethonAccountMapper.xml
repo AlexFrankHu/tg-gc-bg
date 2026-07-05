@@ -186,6 +186,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <update id="updateMessageCountsForActiveAccounts">
         UPDATE tg_telethon_account a
         INNER JOIN (
+            SELECT DISTINCT c.tg_account_id
+            FROM tg_contact c
+            WHERE c.last_send_time >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+               OR c.last_receive_time >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        ) act ON a.id = act.tg_account_id
+        LEFT JOIN (
             SELECT m.tg_account_id,
                    COUNT(*) as total_count,
                    SUM(CASE WHEN m.is_outgoing = 1 THEN 1 ELSE 0 END) as sent_count,
@@ -193,6 +199,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             FROM tg_chat_message m
             LEFT JOIN tg_contact bc ON bc.tg_account_id = m.tg_account_id AND bc.user_id = m.chat_id
             WHERE m.chat_id &gt;= 0
+              AND m.chat_id NOT IN (777000)
               AND (bc.is_bot IS NULL OR bc.is_bot = 0)
               AND m.tg_account_id IN (
                 SELECT DISTINCT c.tg_account_id
@@ -202,9 +209,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             )
             GROUP BY m.tg_account_id
         ) stats ON a.id = stats.tg_account_id
-        SET a.total_msg_count = stats.total_count,
-            a.sent_msg_count = stats.sent_count,
-            a.recv_msg_count = stats.recv_count,
+        SET a.total_msg_count = IFNULL(stats.total_count, 0),
+            a.sent_msg_count = IFNULL(stats.sent_count, 0),
+            a.recv_msg_count = IFNULL(stats.recv_count, 0),
             a.update_time = NOW()
     </update>
 

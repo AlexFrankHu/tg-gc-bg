@@ -307,7 +307,7 @@ function handleAssignContacts(row) {
   assignContactRow.value = row;
   assignContactBatchNo.value = "";
   assignMode.value = "average";
-  assignFixedCount.value = 10;
+  assignFixedCount.value = 1;
   addMethod.value = "one_by_one";
   assignContactVisible.value = true;
   listAllContactImportBatch().then(res => {

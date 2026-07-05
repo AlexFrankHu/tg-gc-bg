@@ -191,7 +191,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                    SUM(CASE WHEN m.is_outgoing = 1 THEN 1 ELSE 0 END) as sent_count,
                    SUM(CASE WHEN m.is_outgoing = 0 THEN 1 ELSE 0 END) as recv_count
             FROM tg_chat_message m
-            WHERE m.tg_account_id IN (
+            LEFT JOIN tg_contact bc ON bc.tg_account_id = m.tg_account_id AND bc.user_id = m.chat_id
+            WHERE m.chat_id &gt;= 0
+              AND (bc.is_bot IS NULL OR bc.is_bot = 0)
+              AND m.tg_account_id IN (
                 SELECT DISTINCT c.tg_account_id
                 FROM tg_contact c
                 WHERE c.last_send_time >= DATE_SUB(NOW(), INTERVAL 24 HOUR)

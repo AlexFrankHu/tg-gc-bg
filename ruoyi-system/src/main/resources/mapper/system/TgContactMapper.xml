@@ -171,7 +171,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                    SUM(CASE WHEN m.is_outgoing = 1 THEN 1 ELSE 0 END) as account_sent,
                    SUM(CASE WHEN m.is_outgoing = 0 THEN 1 ELSE 0 END) as friend_sent
             FROM tg_chat_message m
-            WHERE m.tg_account_id IN (
+            WHERE m.chat_id &gt;= 0
+              AND m.tg_account_id IN (
                 SELECT DISTINCT c2.tg_account_id
                 FROM tg_contact c2
                 WHERE c2.last_send_time >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
@@ -179,6 +180,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             )
             GROUP BY m.tg_account_id, m.chat_id
         ) stats ON c.tg_account_id = stats.tg_account_id AND c.user_id = stats.chat_id
+            AND (c.is_bot IS NULL OR c.is_bot = 0)
         SET c.total_msg_count = stats.total_count,
             c.account_sent_count = stats.account_sent,
             c.friend_sent_count = stats.friend_sent,

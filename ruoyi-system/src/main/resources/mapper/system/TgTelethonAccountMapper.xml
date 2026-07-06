@@ -138,7 +138,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <update id="deleteTgTelethonAccountByIds" parameterType="String">
-        update tg_telethon_account set is_deleted = 1 where id in
+        update tg_telethon_account set is_deleted = 1, status = 'offline', update_time = now() where id in
         <foreach item="id" collection="array" open="(" separator="," close=")">
             #{id}
         </foreach>

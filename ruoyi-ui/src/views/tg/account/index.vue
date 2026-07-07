@@ -54,6 +54,11 @@
           @keyup.enter="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="账号分组" prop="groupId">
+        <el-select v-model="queryParams.groupId" placeholder="全部" clearable style="width: 200px" @change="handleQuery">
+          <el-option v-for="g in queryGroupOptions" :key="g.id" :label="g.groupName" :value="g.id" />
+        </el-select>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
         <el-button icon="Refresh" @click="resetQuery">重置</el-button>
@@ -398,6 +403,7 @@ const data = reactive({
     status: undefined,
     isRestricted: undefined,
     nodeId: undefined,
+    groupId: undefined,
   },
 });
 
@@ -658,6 +664,15 @@ const setGroupVisible = ref(false);
 const setGroupId = ref(null);
 const setGroupLoading = ref(false);
 const groupOptions = ref([]);
+const queryGroupOptions = ref([]);
+
+function loadQueryGroupOptions() {
+  listEnabledAccountGroup().then(res => {
+    if (res.code === 200) {
+      queryGroupOptions.value = res.data || [];
+    }
+  });
+}
 
 function handleSetGroup() {
   if (!ids.value.length) return;
@@ -740,4 +755,5 @@ function handleExportChat(row) {
 }
 
 getList();
+loadQueryGroupOptions();
 </script>

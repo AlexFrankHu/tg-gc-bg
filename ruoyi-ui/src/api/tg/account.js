@@ -149,3 +149,12 @@ export function batchUpdateAccountRestricted(ids, isRestricted) {
     data: { ids, isRestricted }
   })
 }
+
+// 批量设置账号分组
+export function batchSetAccountGroup(ids, groupId) {
+  return request({
+    url: '/tg/account/group/batch',
+    method: 'put',
+    data: { ids, groupId }
+  })
+}

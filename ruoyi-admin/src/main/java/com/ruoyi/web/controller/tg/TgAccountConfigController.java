@@ -508,6 +508,21 @@ public class TgAccountConfigController extends BaseController
         return toAjax(tgTelethonAccountService.batchUpdateIsRestricted(ids, isRestricted));
     }
 
+    /**
+     * 批量设置账号分组
+     */
+    @PreAuthorize("@ss.hasPermi('tg:account:edit')")
+    @PutMapping("/group/batch")
+    public AjaxResult batchUpdateGroupId(@org.springframework.web.bind.annotation.RequestBody java.util.Map<String, Object> params)
+    {
+        @SuppressWarnings("unchecked")
+        List<Integer> ids = (List<Integer>) params.get("ids");
+        Integer groupId = params.get("groupId") != null ? Integer.parseInt(params.get("groupId").toString()) : null;
+        if (ids == null || ids.isEmpty()) return error("请选择账号");
+        if (groupId == null) return error("请选择分组");
+        return toAjax(tgTelethonAccountService.batchUpdateGroupId(ids, groupId));
+    }
+
     private String httpPost(String urlStr, String jsonBody) throws Exception
     {
         URL url = new URL(urlStr);

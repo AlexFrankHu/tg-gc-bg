@@ -22,6 +22,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="nodeId"          column="node_id"          />
         <result property="addMethod"       column="add_method"       />
         <result property="errorReason"     column="error_reason"     />
+        <result property="source"          column="source"          />
+        <result property="groupId"         column="group_id"         />
+        <result property="groupName"       column="group_name"       />
     </resultMap>
 
     <select id="selectList" parameterType="TgContactAssignLog" resultMap="TgContactAssignLogResult">
@@ -33,6 +36,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="contactBatchNo != null and contactBatchNo != ''">AND l.contact_batch_no = #{contactBatchNo}</if>
             <if test="accountPhone != null and accountPhone != ''">AND l.account_phone like concat('%', #{accountPhone}, '%')</if>
             <if test="status != null and status != ''">AND l.status = #{status}</if>
+            <if test="source != null and source != ''">AND l.source = #{source}</if>
+            <if test="groupId != null">AND l.group_id = #{groupId}</if>
             <if test="params.beginCreateTime != null and params.beginCreateTime != ''">AND l.create_time &gt;= #{params.beginCreateTime}</if>
             <if test="params.endCreateTime != null and params.endCreateTime != ''">AND l.create_time &lt;= #{params.endCreateTime}</if>
         </where>
@@ -41,9 +46,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <insert id="insert" parameterType="TgContactAssignLog">
         insert into tg_contact_assign_log (account_batch_no, account_batch_title, account_id, account_phone,
-            contact_batch_no, contact_batch_title, contact_phone, contact_username, status, remark, retry_count, add_method, node_id, error_reason, create_time)
+            contact_batch_no, contact_batch_title, contact_phone, contact_username, status, remark, retry_count, add_method, node_id, error_reason, source, group_id, group_name, create_time)
         values (#{accountBatchNo}, #{accountBatchTitle}, #{accountId}, #{accountPhone},
-            #{contactBatchNo}, #{contactBatchTitle}, #{contactPhone}, #{contactUsername}, #{status}, #{remark}, #{retryCount}, #{addMethod}, #{nodeId}, #{errorReason}, now())
+            #{contactBatchNo}, #{contactBatchTitle}, #{contactPhone}, #{contactUsername}, #{status}, #{remark}, #{retryCount}, #{addMethod}, #{nodeId}, #{errorReason}, #{source}, #{groupId}, #{groupName}, now())
     </insert>
 
 </mapper>

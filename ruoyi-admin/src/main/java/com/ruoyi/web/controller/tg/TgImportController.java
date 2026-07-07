@@ -94,6 +94,9 @@ public class TgImportController extends BaseController
     @Autowired
     private ITgClusterNodeService clusterNodeService;
 
+    @Autowired
+    private com.ruoyi.system.service.ITgAccountGroupService accountGroupService;
+
     /**
      * 查询导入批次列表（逆序）
      */
@@ -489,6 +492,82 @@ public class TgImportController extends BaseController
             return error("以下账号未分配节点，无法分配好友: " + String.join(", ", noNodeAccounts));
         }
 
+        return doAssignToAccounts(accounts, contactBatchNo, mode, fixedCount, addMethod,
+            "import", accountBatchNo, accountBatchTitle, null, null);
+    }
+
+    /**
+     * 给账号分组分配好友并添加(与账号导入页的添加好友逻辑一致, 目标账号来自分组)
+     */
+    @PreAuthorize("@ss.hasPermi('tg:accountGroup:assign')")
+    @PostMapping("/assignContactsByGroup")
+    public AjaxResult assignContactsByGroup(@RequestBody Map<String, Object> params)
+    {
+        Integer groupId = params.get("groupId") != null ? Integer.parseInt(params.get("groupId").toString()) : null;
+        String contactBatchNo = (String) params.get("contactBatchNo");
+        String mode = (String) params.get("mode"); // "average" or "fixed"
+        Integer fixedCount = params.get("fixedCount") != null ? Integer.parseInt(params.get("fixedCount").toString()) : null;
+        String addMethod = params.get("addMethod") != null ? (String) params.get("addMethod") : "one_by_one";
+
+        if (groupId == null || contactBatchNo == null || mode == null)
+        {
+            return error("参数不完整");
+        }
+
+        // Get group info
+        com.ruoyi.system.domain.TgAccountGroup group = accountGroupService.selectTgAccountGroupById(groupId);
+        if (group == null)
+        {
+            return error("账号分组不存在");
+        }
+        String groupName = group.getGroupName();
+
+        // Get accounts in this group (not deleted, online only)
+        TgTelethonAccount query = new TgTelethonAccount();
+        query.setGroupId(groupId);
+        List<TgTelethonAccount> accounts = telethonAccountService.selectTgTelethonAccountList(query);
+        accounts.removeIf(a -> (a.getIsDeleted() != null && a.getIsDeleted() == 1) || !"online".equals(a.getStatus()));
+
+        // Filter out restricted accounts — do not assign contacts to them
+        List<String> restrictedPhones = accounts.stream()
+            .filter(a -> a.getIsRestricted() != null && a.getIsRestricted())
+            .map(TgTelethonAccount::getPhone)
+            .collect(java.util.stream.Collectors.toList());
+        accounts.removeIf(a -> a.getIsRestricted() != null && a.getIsRestricted());
+
+        if (accounts.isEmpty()) {
+            if (!restrictedPhones.isEmpty()) {
+                return error("该分组下在线账号均被限制，无法分配好友");
+            }
+            return error("该分组下没有在线的账号");
+        }
+
+        // Validate all accounts have node_id assigned
+        List<String> noNodeAccounts = accounts.stream()
+            .filter(a -> a.getNodeId() == null || a.getNodeId().isEmpty())
+            .map(TgTelethonAccount::getPhone)
+            .collect(java.util.stream.Collectors.toList());
+        if (!noNodeAccounts.isEmpty()) {
+            return error("以下账号未分配节点，无法分配好友: " + String.join(", ", noNodeAccounts));
+        }
+
+        return doAssignToAccounts(accounts, contactBatchNo, mode, fixedCount, addMethod,
+            "group", null, null, groupId, groupName);
+    }
+
+    /**
+     * 共享的好友分配逻辑: 对给定账号集合按分配方式写入 pending 日志, 实际添加由 Telethon 轮询完成。
+     * source=import 时携带账号批次信息; source=group 时携带分组信息。
+     */
+    private AjaxResult doAssignToAccounts(List<TgTelethonAccount> accounts, String contactBatchNo,
+            String mode, Integer fixedCount, String addMethod,
+            String source, String accountBatchNo, String accountBatchTitle,
+            Integer groupId, String groupName)
+    {
+        // Get contact batch info
+        TgContactImportBatch contactBatch = contactBatchService.selectList(new TgContactImportBatch() {{ setBatchNo(contactBatchNo); }}).stream().findFirst().orElse(null);
+        String contactBatchTitle = contactBatch != null ? contactBatch.getTitle() : contactBatchNo;
+
         // Get contact records
         List<TgContactImportRecord> contacts = contactRecordService.selectByBatchNo(contactBatchNo);
         if (contacts.isEmpty()) return error("好友批次中没有数据");
@@ -623,6 +702,9 @@ public class TgImportController extends BaseController
                 logEntry.setRetryCount(0);
                 logEntry.setAddMethod(addMethod);
                 logEntry.setNodeId(acc.getNodeId());
+                logEntry.setSource(source);
+                logEntry.setGroupId(groupId);
+                logEntry.setGroupName(groupName);
 
                 contactAssignLogMapper.insert(logEntry);
                 totalAssigned++;
@@ -676,6 +758,8 @@ public class TgImportController extends BaseController
         {
             com.ruoyi.system.domain.vo.TgContactAssignLogExport vo = new com.ruoyi.system.domain.vo.TgContactAssignLogExport();
             vo.setId(l.getId());
+            vo.setSourceLabel("group".equals(l.getSource()) ? "账号分组" : "账号导入");
+            vo.setGroupName(l.getGroupName());
             vo.setAccountBatchTitle(l.getAccountBatchTitle());
             vo.setAccountPhone(l.getAccountPhone());
             vo.setContactBatchTitle(l.getContactBatchTitle());

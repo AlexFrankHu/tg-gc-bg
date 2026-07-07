@@ -13,6 +13,12 @@ public class TgContactAssignLogExport
     @Excel(name = "记录ID")
     private Integer id;
 
+    @Excel(name = "来源")
+    private String sourceLabel;
+
+    @Excel(name = "账号分组")
+    private String groupName;
+
     @Excel(name = "账号批次")
     private String accountBatchTitle;
 
@@ -43,6 +49,10 @@ public class TgContactAssignLogExport
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
+    public String getSourceLabel() { return sourceLabel; }
+    public void setSourceLabel(String sourceLabel) { this.sourceLabel = sourceLabel; }
+    public String getGroupName() { return groupName; }
+    public void setGroupName(String groupName) { this.groupName = groupName; }
     public String getAccountBatchTitle() { return accountBatchTitle; }
     public void setAccountBatchTitle(String accountBatchTitle) { this.accountBatchTitle = accountBatchTitle; }
     public String getAccountPhone() { return accountPhone; }

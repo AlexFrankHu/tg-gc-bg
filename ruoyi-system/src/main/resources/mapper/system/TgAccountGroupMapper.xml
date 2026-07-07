@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgAccountGroupMapper">
+
+    <resultMap type="TgAccountGroup" id="TgAccountGroupResult">
+        <result property="id"           column="id"           />
+        <result property="groupName"    column="group_name"   />
+        <result property="enabled"      column="enabled"      />
+        <result property="accountCount" column="account_count"/>
+        <result property="createTime"   column="create_time"  />
+        <result property="updateTime"   column="update_time"  />
+    </resultMap>
+
+    <select id="selectTgAccountGroupList" parameterType="TgAccountGroup" resultMap="TgAccountGroupResult">
+        select g.id, g.group_name, g.enabled, g.create_time, g.update_time,
+               (select count(*) from tg_telethon_account a where a.group_id = g.id and (a.is_deleted = 0 or a.is_deleted is null)) as account_count
+        from tg_account_group g
+        <where>
+            <if test="groupName != null and groupName != ''">
+                AND g.group_name like concat('%', #{groupName}, '%')
+            </if>
+            <if test="enabled != null">
+                AND g.enabled = #{enabled}
+            </if>
+        </where>
+        order by g.id desc
+    </select>
+
+    <select id="selectTgAccountGroupById" parameterType="Integer" resultMap="TgAccountGroupResult">
+        select id, group_name, enabled, create_time, update_time
+        from tg_account_group
+        where id = #{id}
+    </select>
+
+    <insert id="insertTgAccountGroup" parameterType="TgAccountGroup" useGeneratedKeys="true" keyProperty="id">
+        insert into tg_account_group (group_name, enabled, create_time)
+        values (#{groupName}, #{enabled}, now())
+    </insert>
+
+    <update id="updateTgAccountGroup" parameterType="TgAccountGroup">
+        update tg_account_group
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="groupName != null and groupName != ''">group_name = #{groupName},</if>
+            <if test="enabled != null">enabled = #{enabled},</if>
+            update_time = now(),
+        </trim>
+        where id = #{id}
+    </update>
+
+</mapper>

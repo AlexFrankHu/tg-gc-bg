@@ -71,6 +71,12 @@ public class TgTelethonAccountServiceImpl implements ITgTelethonAccountService
     }
 
     @Override
+    public int batchUpdateGroupId(List<Integer> ids, Integer groupId)
+    {
+        return tgTelethonAccountMapper.batchUpdateGroupId(ids, groupId);
+    }
+
+    @Override
     public int updateAllAutoReply(Boolean autoReply)
     {
         return tgTelethonAccountMapper.updateAllAutoReply(autoReply);

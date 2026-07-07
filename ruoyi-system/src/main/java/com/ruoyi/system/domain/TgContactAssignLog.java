@@ -25,6 +25,12 @@ public class TgContactAssignLog extends BaseEntity
     private String addMethod;
     /** 失败原因 */
     private String errorReason;
+    /** 来源 import-账号导入 group-账号分组 */
+    private String source;
+    /** 账号分组ID(source=group时) */
+    private Integer groupId;
+    /** 账号分组名称(source=group时) */
+    private String groupName;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
@@ -69,4 +75,10 @@ public class TgContactAssignLog extends BaseEntity
     public void setAddMethod(String addMethod) { this.addMethod = addMethod; }
     public String getErrorReason() { return errorReason; }
     public void setErrorReason(String errorReason) { this.errorReason = errorReason; }
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
+    public Integer getGroupId() { return groupId; }
+    public void setGroupId(Integer groupId) { this.groupId = groupId; }
+    public String getGroupName() { return groupName; }
+    public void setGroupName(String groupName) { this.groupName = groupName; }
 }

@@ -12,6 +12,12 @@
           <el-option label="跳过" value="skipped" />
         </el-select>
       </el-form-item>
+      <el-form-item label="来源" prop="source">
+        <el-select v-model="queryParams.source" placeholder="全部" clearable style="width: 120px">
+          <el-option label="账号导入" value="import" />
+          <el-option label="账号分组" value="group" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="时间">
         <el-date-picker
           v-model="dateRange"
@@ -33,6 +39,17 @@
 
     <el-table v-loading="loading" :data="logList">
       <el-table-column label="记录ID" align="center" prop="id" width="80" />
+      <el-table-column label="来源" align="center" width="100">
+        <template #default="scope">
+          <el-tag type="warning" v-if="scope.row.source === 'group'">账号分组</el-tag>
+          <el-tag type="success" v-else>账号导入</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="账号分组" align="center" prop="groupName" min-width="110" :show-overflow-tooltip="true">
+        <template #default="scope">
+          {{ scope.row.groupName || '-' }}
+        </template>
+      </el-table-column>
       <el-table-column label="账号批次" align="center" prop="accountBatchTitle" min-width="120" :show-overflow-tooltip="true" />
       <el-table-column label="账号" align="center" prop="accountPhone" min-width="140" />
       <el-table-column label="账号状态" align="center" prop="accountStatus" width="100">
@@ -93,6 +110,7 @@ const queryParams = ref({
   pageSize: 20,
   accountPhone: undefined,
   status: undefined,
+  source: undefined,
 });
 
 function getList() {
@@ -117,6 +135,7 @@ function handleQuery() {
 function resetQuery() {
   queryParams.value.accountPhone = undefined;
   queryParams.value.status = undefined;
+  queryParams.value.source = undefined;
   dateRange.value = [];
   handleQuery();
 }

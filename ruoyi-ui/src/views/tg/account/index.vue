@@ -77,6 +77,9 @@
         <el-button type="info" plain :disabled="multiple" @click="handleBatchUnrestrict" v-hasPermi="['tg:account:edit']">解除选中限制</el-button>
       </el-col>
       <el-col :span="1.5">
+        <el-button type="primary" plain :disabled="multiple" @click="handleSetGroup" v-hasPermi="['tg:account:edit']">设置账号分组</el-button>
+      </el-col>
+      <el-col :span="1.5">
         <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['tg:account:remove']">删除</el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
@@ -103,6 +106,11 @@
       <el-table-column label="批次" align="center" prop="batchTitle" width="100" show-overflow-tooltip>
         <template #default="scope">
           <span>{{ scope.row.batchTitle || '-' }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="分组" align="center" prop="groupName" width="100" show-overflow-tooltip>
+        <template #default="scope">
+          <span>{{ scope.row.groupName || '-' }}</span>
         </template>
       </el-table-column>
       <el-table-column label="代理IP" align="center" width="90" show-overflow-tooltip>
@@ -312,12 +320,31 @@
         <el-button type="primary" :loading="configProxyLoading" @click="submitConfigProxy" :disabled="!configProxyForm.host || !configProxyForm.port">确定</el-button>
       </template>
     </el-dialog>
+
+    <!-- 设置账号分组对话框 -->
+    <el-dialog v-model="setGroupVisible" title="设置账号分组" width="420px" append-to-body>
+      <el-form label-width="90px">
+        <el-form-item label="已选账号">
+          <span>{{ ids.length }} 个</span>
+        </el-form-item>
+        <el-form-item label="选择分组">
+          <el-select v-model="setGroupId" placeholder="请选择可用分组" style="width: 100%">
+            <el-option v-for="g in groupOptions" :key="g.id" :label="g.groupName" :value="g.id" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="setGroupVisible = false">取消</el-button>
+        <el-button type="primary" :loading="setGroupLoading" @click="submitSetGroup" :disabled="setGroupId == null">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup name="Account">
-import { listAccount, getAccount, delAccount, triggerLogin, loginNoProxy, logoutAccount, getWsToken, loginBatch, logoutBatch, getProxyInfo, autoSelectProxy, manualSelectProxy, configProxy, updateAccountAutoReply, updateAllAccountAutoReply, updateAccountRestricted, batchUpdateAccountRestricted } from "@/api/tg/account";
+import { listAccount, getAccount, delAccount, triggerLogin, loginNoProxy, logoutAccount, getWsToken, loginBatch, logoutBatch, getProxyInfo, autoSelectProxy, manualSelectProxy, configProxy, updateAccountAutoReply, updateAllAccountAutoReply, updateAccountRestricted, batchUpdateAccountRestricted, batchSetAccountGroup } from "@/api/tg/account";
 import { listAllBatch } from "@/api/tg/import";
+import { listEnabledAccountGroup } from "@/api/tg/accountGroup";
 import { listAllProxyGroup, listProxyIp } from "@/api/tg/proxy";
 import { ArrowDown } from '@element-plus/icons-vue';
 
@@ -625,6 +652,38 @@ async function handleWebClient(row) {
   } catch (e) {
     proxy.$modal.msgError("获取token失败: " + (e.message || e));
   }
+}
+
+const setGroupVisible = ref(false);
+const setGroupId = ref(null);
+const setGroupLoading = ref(false);
+const groupOptions = ref([]);
+
+function handleSetGroup() {
+  if (!ids.value.length) return;
+  setGroupId.value = null;
+  setGroupVisible.value = true;
+  listEnabledAccountGroup().then(res => {
+    if (res.code === 200) {
+      groupOptions.value = res.data || [];
+    }
+  });
+}
+
+function submitSetGroup() {
+  if (setGroupId.value == null) return;
+  setGroupLoading.value = true;
+  batchSetAccountGroup(ids.value, setGroupId.value).then(res => {
+    if (res.code === 200) {
+      proxy.$modal.msgSuccess('分组设置成功');
+      setGroupVisible.value = false;
+      getList();
+    } else {
+      proxy.$modal.msgError(res.msg || '设置失败');
+    }
+  }).finally(() => {
+    setGroupLoading.value = false;
+  });
 }
 
 function handleBatchUnrestrict() {

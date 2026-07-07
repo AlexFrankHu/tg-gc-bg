@@ -53,6 +53,12 @@ public class TgTelethonAccount extends BaseEntity
     /** 导入批次号 */
     private String batchNo;
 
+    /** 所属账号分组ID */
+    private Integer groupId;
+
+    /** 所属账号分组名称(关联查询) */
+    private String groupName;
+
     /** 状态: online-在线, offline-下线, banned-已被注销, waiting-等待登录 */
     private String status;
 
@@ -166,6 +172,12 @@ public class TgTelethonAccount extends BaseEntity
 
     public String getBatchNo() { return batchNo; }
     public void setBatchNo(String batchNo) { this.batchNo = batchNo; }
+
+    public Integer getGroupId() { return groupId; }
+    public void setGroupId(Integer groupId) { this.groupId = groupId; }
+
+    public String getGroupName() { return groupName; }
+    public void setGroupName(String groupName) { this.groupName = groupName; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

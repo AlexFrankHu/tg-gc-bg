@@ -19,6 +19,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="langCode"        column="lang_code"        />
         <result property="systemLangCode"  column="system_lang_code" />
         <result property="batchNo"         column="batch_no"         />
+        <result property="groupId"         column="group_id"         />
+        <result property="groupName"       column="groupName"        />
         <result property="status"          column="status"           />
         <result property="proxyIpId"       column="proxy_ip_id"      />
         <result property="proxyGroupNo"    column="proxy_group_no"   />
@@ -45,12 +47,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectTgTelethonAccountVo">
-        select a.id, a.phone, a.api_id, a.api_hash, a.tg_user_id, a.nickname, a.username, a.country, a.device_model, a.system_version, a.app_version, a.lang_code, a.system_lang_code, a.batch_no, a.status, a.proxy_ip_id, a.proxy_group_no, a.proxy_url, a.proxy_protocol, a.proxy_host, a.proxy_port, a.proxy_username, a.proxy_password, a.auto_reply, a.is_restricted, a.total_msg_count, a.sent_msg_count, a.recv_msg_count, a.node_id, a.json_content, a.last_login_time, a.create_time, a.update_time,
+        select a.id, a.phone, a.api_id, a.api_hash, a.tg_user_id, a.nickname, a.username, a.country, a.device_model, a.system_version, a.app_version, a.lang_code, a.system_lang_code, a.batch_no, a.group_id, a.status, a.proxy_ip_id, a.proxy_group_no, a.proxy_url, a.proxy_protocol, a.proxy_host, a.proxy_port, a.proxy_username, a.proxy_password, a.auto_reply, a.is_restricted, a.total_msg_count, a.sent_msg_count, a.recv_msg_count, a.node_id, a.json_content, a.last_login_time, a.create_time, a.update_time,
         b.title as batchTitle,
-        pg.group_name as proxyGroupTitle
+        pg.group_name as proxyGroupTitle,
+        ag.group_name as groupName
         from tg_telethon_account a
         left join tg_import_batch b on a.batch_no = b.batch_no
         left join tg_proxy_group pg on a.proxy_group_no = pg.group_no
+        left join tg_account_group ag on a.group_id = ag.id
     </sql>
 
     <select id="selectTgTelethonAccountById" parameterType="Integer" resultMap="TgTelethonAccountResult">
@@ -80,6 +84,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="batchNo != null and batchNo != ''">
                 AND a.batch_no = #{batchNo}
             </if>
+            <if test="groupId != null">
+                AND a.group_id = #{groupId}
+            </if>
             <if test="nodeId != null and nodeId != ''">
                 AND a.node_id = #{nodeId}
             </if>
@@ -104,6 +111,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="proxyPassword != null">proxy_password = #{proxyPassword},</if>
             <if test="autoReply != null">auto_reply = #{autoReply},</if>
             <if test="nodeId != null">node_id = #{nodeId},</if>
+            <if test="groupId != null">group_id = #{groupId},</if>
             update_time = now(),
         </trim>
         where id = #{id}
@@ -174,6 +182,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <update id="batchUpdateIsRestricted">
         update tg_telethon_account set is_restricted = #{isRestricted}, update_time = now() where id in
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="batchUpdateGroupId">
+        update tg_telethon_account set group_id = #{groupId}, update_time = now() where id in
         <foreach item="id" collection="ids" open="(" separator="," close=")">
             #{id}
         </foreach>

@@ -681,11 +681,16 @@ public class TgImportController extends BaseController
             List<TgContactImportRecord> records = entry.getValue();
             if (records.isEmpty()) continue;
 
+            // 写入日志时携带账号自身的批次信息; import 来源沿用传入批次, group 来源取账号各自的批次
+            String effBatchNo = accountBatchNo != null ? accountBatchNo : acc.getBatchNo();
+            String effBatchTitle = accountBatchTitle != null ? accountBatchTitle
+                : (acc.getBatchTitle() != null ? acc.getBatchTitle() : acc.getBatchNo());
+
             for (TgContactImportRecord record : records)
             {
                 TgContactAssignLog logEntry = new TgContactAssignLog();
-                logEntry.setAccountBatchNo(accountBatchNo);
-                logEntry.setAccountBatchTitle(accountBatchTitle);
+                logEntry.setAccountBatchNo(effBatchNo);
+                logEntry.setAccountBatchTitle(effBatchTitle);
                 logEntry.setAccountId(acc.getId());
                 logEntry.setAccountPhone(acc.getPhone());
                 logEntry.setContactBatchNo(contactBatchNo);

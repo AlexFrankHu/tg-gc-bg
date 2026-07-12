@@ -7,11 +7,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.github.pagehelper.PageHelper;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.core.page.PageDomain;
 import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.common.core.page.TableSupport;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.utils.sql.SqlUtil;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.system.domain.TgChatMessage;
 import com.ruoyi.system.domain.vo.TgChatMessageExport;
@@ -31,9 +35,21 @@ public class TgChatMessageController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(TgChatMessage tgChatMessage)
     {
-        startPage();
+        // tg_chat_message 有千万级数据, PageHelper 默认每次翻页都对全表 COUNT(约24秒),
+        // 这里改为分页查询不带自动 COUNT, 总数由 service 单独计算(带过滤时限时精确统计, 否则近似).
+        PageDomain pageDomain = TableSupport.buildPageRequest();
+        Integer pageNum = pageDomain.getPageNum();
+        Integer pageSize = pageDomain.getPageSize();
+        String orderBy = SqlUtil.escapeOrderBySql(pageDomain.getOrderBy());
+        PageHelper.startPage(pageNum, pageSize, orderBy).setCount(false);
         List<TgChatMessage> list = tgChatMessageService.selectTgChatMessageList(tgChatMessage);
-        return getDataTable(list);
+
+        TableDataInfo rsp = new TableDataInfo();
+        rsp.setCode(200);
+        rsp.setMsg("查询成功");
+        rsp.setRows(list);
+        rsp.setTotal(tgChatMessageService.countForPage(tgChatMessage));
+        return rsp;
     }
 
     @PreAuthorize("@ss.hasPermi('tg:chatMessage:query')")

@@ -42,14 +42,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where id = #{id}
     </select>
 
-    <select id="selectTgChatMessageList" parameterType="TgChatMessage" resultMap="TgChatMessageResult">
-        select m.id, m.tg_account_id, m.chat_id, m.message_id, m.sender_user_id, m.sender_chat_id,
-               m.sender_name, m.is_outgoing, m.send_time, m.content_type, m.text_content,
-               m.media_file_id, m.media_file_size, m.media_mime_type, m.media_file_name,
-               m.media_duration, m.media_width, m.media_height, m.thumbnail_file_id, m.create_time,
-               a.phone as account_phone
-        from tg_chat_message m
-        left join tg_telethon_account a on a.id = m.tg_account_id
+    <sql id="listWhere">
         <where>
             AND m.chat_id &gt;= 0
             <if test="tgAccountId != null">
@@ -80,7 +73,33 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 AND m.send_time &lt;= #{params.endSendTime}
             </if>
         </where>
+    </sql>
+
+    <select id="selectTgChatMessageList" parameterType="TgChatMessage" resultMap="TgChatMessageResult">
+        select m.id, m.tg_account_id, m.chat_id, m.message_id, m.sender_user_id, m.sender_chat_id,
+               m.sender_name, m.is_outgoing, m.send_time, m.content_type, m.text_content,
+               m.media_file_id, m.media_file_size, m.media_mime_type, m.media_file_name,
+               m.media_duration, m.media_width, m.media_height, m.thumbnail_file_id, m.create_time,
+               a.phone as account_phone
+        from tg_chat_message m
+        left join tg_telethon_account a on a.id = m.tg_account_id
+        <include refid="listWhere"/>
         order by m.send_time desc
+    </select>
+
+    <!-- Exact count with a hard time cap (ms). If it exceeds the cap MySQL aborts
+         with error 3024 and the caller falls back to an approximate count. -->
+    <select id="countTgChatMessageList" parameterType="TgChatMessage" resultType="long">
+        select /*+ MAX_EXECUTION_TIME(2500) */ count(1)
+        from tg_chat_message m
+        <include refid="listWhere"/>
+    </select>
+
+    <!-- Instant approximate row count from InnoDB statistics. -->
+    <select id="approximateTgChatMessageCount" resultType="long">
+        select table_rows
+        from information_schema.tables
+        where table_schema = database() and table_name = 'tg_chat_message'
     </select>
 
     <insert id="insertTgChatMessage" parameterType="TgChatMessage" useGeneratedKeys="true" keyProperty="id">

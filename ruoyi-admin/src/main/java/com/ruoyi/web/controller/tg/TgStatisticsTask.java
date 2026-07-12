@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import com.ruoyi.system.domain.TgClusterNode;
+import com.ruoyi.system.domain.TgContact;
+import com.ruoyi.system.domain.TgTelethonAccount;
 import com.ruoyi.system.mapper.TgTelethonAccountMapper;
 import com.ruoyi.system.mapper.TgContactMapper;
 import com.ruoyi.system.mapper.TgClusterNodeMapper;
@@ -60,14 +62,25 @@ public class TgStatisticsTask
         }
     }
 
+    /** 每批更新的行数, 控制单条 UPDATE 的锁范围 */
+    private static final int BATCH_SIZE = 500;
+
     /**
-     * 统计账号消息数量
+     * 统计账号消息数量。
+     * 先用普通 SELECT(一致性非锁定读, 不加行锁)算出结果, 再按主键分批 UPDATE,
+     * 避免原来 UPDATE...JOIN 长时间锁住上千万行导致节点写入 1205/1213。
      */
     private void updateAccountMessageCounts()
     {
         try
         {
-            int updated = telethonAccountMapper.updateMessageCountsForActiveAccounts();
+            List<TgTelethonAccount> stats = telethonAccountMapper.selectAccountMessageStats();
+            int updated = 0;
+            for (int i = 0; i < stats.size(); i += BATCH_SIZE)
+            {
+                List<TgTelethonAccount> batch = stats.subList(i, Math.min(i + BATCH_SIZE, stats.size()));
+                updated += telethonAccountMapper.batchUpdateAccountMessageCounts(batch);
+            }
             if (updated > 0)
             {
                 log.info("消息统计: 更新了 {} 个账号的消息数量", updated);
@@ -80,13 +93,19 @@ public class TgStatisticsTask
     }
 
     /**
-     * 统计好友消息数量
+     * 统计好友消息数量。策略同上: 只读快照 + 按主键分批 UPDATE。
      */
     private void updateContactMessageCounts()
     {
         try
         {
-            int updated = contactMapper.updateMessageCountsForActiveContacts();
+            List<TgContact> stats = contactMapper.selectContactMessageStats();
+            int updated = 0;
+            for (int i = 0; i < stats.size(); i += BATCH_SIZE)
+            {
+                List<TgContact> batch = stats.subList(i, Math.min(i + BATCH_SIZE, stats.size()));
+                updated += contactMapper.batchUpdateContactMessageCounts(batch);
+            }
             if (updated > 0)
             {
                 log.info("好友消息统计: 更新了 {} 个好友的消息数量", updated);

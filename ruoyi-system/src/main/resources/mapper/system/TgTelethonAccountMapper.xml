@@ -198,8 +198,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         update tg_telethon_account set auto_reply = #{autoReply}, update_time = now() where (is_deleted = 0 OR is_deleted IS NULL)
     </update>
 
-    <update id="updateMessageCountsForActiveAccounts">
-        UPDATE tg_telethon_account a
+    <!-- 只读快照统计: 普通 SELECT 是一致性非锁定读, 不加行锁, 不阻塞节点写入 -->
+    <select id="selectAccountMessageStats" resultType="TgTelethonAccount">
+        SELECT a.id AS id,
+               IFNULL(stats.total_count, 0) AS totalMsgCount,
+               IFNULL(stats.sent_count, 0)  AS sentMsgCount,
+               IFNULL(stats.recv_count, 0)  AS recvMsgCount
+        FROM tg_telethon_account a
         INNER JOIN (
             SELECT DISTINCT c.tg_account_id
             FROM tg_contact c
@@ -224,10 +229,23 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             )
             GROUP BY m.tg_account_id
         ) stats ON a.id = stats.tg_account_id
-        SET a.total_msg_count = IFNULL(stats.total_count, 0),
-            a.sent_msg_count = IFNULL(stats.sent_count, 0),
-            a.recv_msg_count = IFNULL(stats.recv_count, 0),
-            a.update_time = NOW()
+    </select>
+
+    <!-- 按主键分批更新, 每批只锁少量行且立即提交, 避免长时间大范围持锁 -->
+    <update id="batchUpdateAccountMessageCounts" parameterType="java.util.List">
+        UPDATE tg_telethon_account
+        SET total_msg_count = CASE id
+            <foreach collection="list" item="it">WHEN #{it.id} THEN #{it.totalMsgCount} </foreach>
+            END,
+            sent_msg_count = CASE id
+            <foreach collection="list" item="it">WHEN #{it.id} THEN #{it.sentMsgCount} </foreach>
+            END,
+            recv_msg_count = CASE id
+            <foreach collection="list" item="it">WHEN #{it.id} THEN #{it.recvMsgCount} </foreach>
+            END,
+            update_time = NOW()
+        WHERE id IN
+        <foreach collection="list" item="it" open="(" separator="," close=")">#{it.id}</foreach>
     </update>
 
 </mapper>

@@ -42,4 +42,7 @@ public interface TgTelethonAccountMapper
     public int batchUpdateStatus(@Param("ids") List<Integer> ids, @Param("status") String status);
 
     public int updateMessageCountsForActiveAccounts();
+
+    public List<TgTelethonAccount> selectAccountMessageStats();
+    public int batchUpdateAccountMessageCounts(@Param("list") List<TgTelethonAccount> list);
 }

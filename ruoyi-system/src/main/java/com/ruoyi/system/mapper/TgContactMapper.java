@@ -16,4 +16,7 @@ public interface TgContactMapper
     public int updateAllAutoReply(@Param("autoReply") Boolean autoReply);
 
     public int updateMessageCountsForActiveContacts();
+
+    public List<TgContact> selectContactMessageStats();
+    public int batchUpdateContactMessageCounts(@Param("list") List<TgContact> list);
 }

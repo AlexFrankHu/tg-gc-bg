@@ -87,6 +87,9 @@
       <el-col :span="1.5">
         <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete" v-hasPermi="['tg:account:remove']">删除</el-button>
       </el-col>
+      <el-col :span="1.5">
+        <el-button type="info" plain icon="Download" @click="handleExport" v-hasPermi="['tg:account:list']">导出</el-button>
+      </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
@@ -752,6 +755,15 @@ function handleExportChat(row) {
   proxy.download('tg/chatMessage/export', {
     tgAccountId: row.id,
   }, `聊天记录_${row.phone}_${new Date().getTime()}.xlsx`);
+}
+
+function handleExport() {
+  proxy.$modal.confirm('是否确认导出当前筛选条件的账号数据？').then(() => {
+    const params = { ...queryParams.value };
+    delete params.pageNum;
+    delete params.pageSize;
+    proxy.download('tg/account/export', params, `账号列表_${new Date().getTime()}.xlsx`, { timeout: 300000 });
+  }).catch(() => {});
 }
 
 getList();

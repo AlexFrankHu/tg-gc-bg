@@ -72,6 +72,59 @@ public class TgAccountConfigController extends BaseController
     }
 
     /**
+     * 导出账号列表(按当前筛选条件)
+     */
+    @PreAuthorize("@ss.hasPermi('tg:account:list')")
+    @PostMapping("/export")
+    public void export(jakarta.servlet.http.HttpServletResponse response, TgTelethonAccount account)
+    {
+        List<TgTelethonAccount> list = tgTelethonAccountService.selectTgTelethonAccountList(account);
+        java.util.List<com.ruoyi.system.domain.vo.TgTelethonAccountExport> exportList = new java.util.ArrayList<>();
+        for (TgTelethonAccount a : list)
+        {
+            com.ruoyi.system.domain.vo.TgTelethonAccountExport vo = new com.ruoyi.system.domain.vo.TgTelethonAccountExport();
+            vo.setId(a.getId());
+            vo.setPhone(a.getPhone());
+            vo.setNickname(a.getNickname());
+            vo.setUsername(a.getUsername());
+            vo.setTgUserId(a.getTgUserId());
+            vo.setCountry(a.getCountry());
+            vo.setStatus(statusText(a.getStatus()));
+            vo.setBatchTitle(a.getBatchTitle());
+            vo.setGroupName(a.getGroupName());
+            vo.setProxyGroupTitle(a.getProxyGroupTitle());
+            vo.setAutoReply(Boolean.TRUE.equals(a.getAutoReply()) ? "开" : "关");
+            vo.setIsRestricted(Boolean.TRUE.equals(a.getIsRestricted()) ? "是" : "否");
+            vo.setTotalMsgCount(a.getTotalMsgCount());
+            vo.setSentMsgCount(a.getSentMsgCount());
+            vo.setRecvMsgCount(a.getRecvMsgCount());
+            vo.setNodeId(a.getNodeId());
+            vo.setLastLoginTime(a.getLastLoginTime());
+            vo.setCreateTime(a.getCreateTime());
+            exportList.add(vo);
+        }
+        com.ruoyi.common.utils.poi.ExcelUtil<com.ruoyi.system.domain.vo.TgTelethonAccountExport> util =
+            new com.ruoyi.common.utils.poi.ExcelUtil<>(com.ruoyi.system.domain.vo.TgTelethonAccountExport.class);
+        util.exportExcel(response, exportList, "账号列表");
+    }
+
+    private String statusText(String status)
+    {
+        if (status == null) return "";
+        switch (status)
+        {
+            case "online": return "在线";
+            case "offline": return "离线";
+            case "waiting": return "等待登录";
+            case "login1": return "登录中(代理)";
+            case "login2": return "登录中(无代理)";
+            case "failed": return "失败";
+            case "banned": return "已注销";
+            default: return status;
+        }
+    }
+
+    /**
      * 获取账号详细信息
      */
     @PreAuthorize("@ss.hasPermi('tg:account:query')")

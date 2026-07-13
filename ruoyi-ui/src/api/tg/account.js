@@ -9,6 +9,15 @@ export function listAccount(query) {
   })
 }
 
+// 导出账号列表(按筛选条件)
+export function exportAccount(query) {
+  return request({
+    url: '/tg/account/export',
+    method: 'post',
+    params: query
+  })
+}
+
 // 查询账号详细
 export function getAccount(id) {
   return request({

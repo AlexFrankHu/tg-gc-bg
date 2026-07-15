@@ -158,11 +158,23 @@ public class TgImportController extends BaseController
     @PreAuthorize("@ss.hasPermi('tg:import:add')")
     @PostMapping("/upload")
     public AjaxResult importAccounts(@RequestParam("file") MultipartFile file,
-                                     @RequestParam(value = "title", required = false) String title)
+                                     @RequestParam(value = "title", required = false) String title,
+                                     @RequestParam(value = "nodeId", required = false) String nodeId)
     {
         if (file.isEmpty())
         {
             return error("请选择要导入的文件");
+        }
+
+        // 指定节点时校验节点存在; 不指定(空)时走原有的自动分配流程
+        final String assignNodeId = (nodeId != null && !nodeId.trim().isEmpty()) ? nodeId.trim() : null;
+        if (assignNodeId != null)
+        {
+            TgClusterNode node = clusterNodeService.selectTgClusterNodeById(assignNodeId);
+            if (node == null)
+            {
+                return error("指定的节点不存在: " + assignNodeId);
+            }
         }
 
         String originalName = file.getOriginalFilename();
@@ -244,6 +256,8 @@ public class TgImportController extends BaseController
                 newAccount.setBatchNo(batchNo);
                 newAccount.setJsonContent(jsonContentStr);
                 newAccount.setSessionContent(sessionContentBytes);
+                // 指定节点时直接落库 node_id, 使其跳过自动分配任务, 直接归属该节点
+                newAccount.setNodeId(assignNodeId);
                 telethonAccountService.insertWaitingAccount(newAccount);
             }
 

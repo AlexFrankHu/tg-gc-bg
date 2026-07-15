@@ -71,6 +71,16 @@
         <el-form-item label="批次标题">
           <el-input v-model="importTitle" placeholder="请输入批次备注标题" maxlength="200" />
         </el-form-item>
+        <el-form-item label="指定节点">
+          <el-select v-model="importNodeId" placeholder="默认不指定(自动分配)" clearable filterable style="width: 100%">
+            <el-option
+              v-for="n in nodeOptions"
+              :key="n.nodeId"
+              :label="n.nodeId + (n.publicIp ? ' (' + n.publicIp + (n.nodePort ? ':' + n.nodePort : '') + ')' : '') + (n.nodeType ? ' [' + n.nodeType + ']' : '')"
+              :value="n.nodeId"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="文件名">
           <span>{{ selectedFile ? selectedFile.name : '' }}</span>
         </el-form-item>
@@ -165,6 +175,7 @@ import { listBatch, importAccounts, updateBatchTitle, assignContacts } from "@/a
 import { listAllProxyGroup } from "@/api/tg/proxy";
 import { batchAssignProxy } from "@/api/tg/account";
 import { listAllContactImportBatch } from "@/api/tg/contactImport";
+import { listNode } from "@/api/tg/node";
 
 const { proxy } = getCurrentInstance();
 const router = useRouter();
@@ -176,6 +187,8 @@ const uploading = ref(false);
 const uploadDialogVisible = ref(false);
 const selectedFile = ref(null);
 const importTitle = ref("");
+const importNodeId = ref("");
+const nodeOptions = ref([]);
 
 const batchProxyVisible = ref(false);
 const batchProxyGroupNo = ref("");
@@ -219,7 +232,15 @@ function handleFileChange(file) {
   }
   selectedFile.value = file.raw;
   importTitle.value = "";
+  importNodeId.value = "";
+  loadNodeOptions();
   uploadDialogVisible.value = true;
+}
+
+function loadNodeOptions() {
+  listNode({ pageNum: 1, pageSize: 1000 }).then(res => {
+    nodeOptions.value = res.rows || [];
+  });
 }
 
 function submitUpload() {
@@ -229,6 +250,9 @@ function submitUpload() {
   formData.append('file', selectedFile.value);
   if (importTitle.value) {
     formData.append('title', importTitle.value);
+  }
+  if (importNodeId.value) {
+    formData.append('nodeId', importNodeId.value);
   }
   importAccounts(formData).then(res => {
     if (res.code === 200) {
@@ -240,6 +264,7 @@ function submitUpload() {
       uploadDialogVisible.value = false;
       selectedFile.value = null;
       importTitle.value = "";
+      importNodeId.value = "";
       getList();
     } else {
       proxy.$modal.msgError(res.msg || "导入失败");

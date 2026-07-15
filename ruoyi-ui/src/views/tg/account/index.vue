@@ -35,6 +35,7 @@
           <el-option label="等待登录" value="waiting" />
           <el-option label="登录中(代理)" value="login1" />
           <el-option label="登录中(无代理)" value="login2" />
+          <el-option label="等待登出" value="waitLogout" />
           <el-option label="失败" value="failed" />
           <el-option label="已注销" value="banned" />
         </el-select>
@@ -420,6 +421,7 @@ function statusTagType(status) {
   if (status === "failed") return "danger";
   if (status === "login1") return "warning";
   if (status === "login2") return "warning";
+  if (status === "waitLogout") return "warning";
   return "info";
 }
 
@@ -431,6 +433,7 @@ function statusText(status) {
   if (status === "failed") return "登录失败";
   if (status === "login1") return "登录中(代理)";
   if (status === "login2") return "登录中(无代理)";
+  if (status === "waitLogout") return "等待登出";
   return status || "未知";
 }
 

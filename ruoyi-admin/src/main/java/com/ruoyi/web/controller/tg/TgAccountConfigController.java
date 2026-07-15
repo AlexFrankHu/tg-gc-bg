@@ -118,6 +118,7 @@ public class TgAccountConfigController extends BaseController
             case "waiting": return "等待登录";
             case "login1": return "登录中(代理)";
             case "login2": return "登录中(无代理)";
+            case "waitLogout": return "等待登出";
             case "failed": return "失败";
             case "banned": return "已注销";
             default: return status;
@@ -190,7 +191,7 @@ public class TgAccountConfigController extends BaseController
     }
 
     /**
-     * 登出账号 - 设置状态为offline，节点会在下次心跳时处理
+     * 登出账号 - 设置状态为 waitLogout(等待登出)，节点定时器轮询到后真正登出并释放资源
      */
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")
     @PutMapping("/logout/{id}")
@@ -201,7 +202,7 @@ public class TgAccountConfigController extends BaseController
         {
             return error("账号不存在");
         }
-        tgTelethonAccountService.updateStatusById(id, "offline");
+        tgTelethonAccountService.updateStatusById(id, "waitLogout");
         return success("设置成功，等待节点登出");
     }
 
@@ -234,7 +235,7 @@ public class TgAccountConfigController extends BaseController
     }
 
     /**
-     * 批量登出 - 设置状态为offline
+     * 批量登出 - 设置状态为 waitLogout(等待登出)，节点定时器轮询到后真正登出并释放资源
      */
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")
     @PutMapping("/logoutBatch/{batchNo}")
@@ -251,7 +252,7 @@ public class TgAccountConfigController extends BaseController
         int setCount = 0;
         for (TgTelethonAccount acc : accounts)
         {
-            tgTelethonAccountService.updateStatusById(acc.getId(), "offline");
+            tgTelethonAccountService.updateStatusById(acc.getId(), "waitLogout");
             setCount++;
         }
         return success("设置成功，共设置 " + setCount + " 个账号");

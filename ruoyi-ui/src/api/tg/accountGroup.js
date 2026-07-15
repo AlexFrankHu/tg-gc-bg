@@ -48,6 +48,7 @@ export function assignContactsByGroup(data) {
   return request({
     url: '/tg/import/assignContactsByGroup',
     method: 'post',
-    data: data
+    data: data,
+    timeout: 300000
   })
 }

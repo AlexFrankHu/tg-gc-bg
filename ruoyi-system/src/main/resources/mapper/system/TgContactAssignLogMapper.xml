@@ -51,4 +51,24 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{contactBatchNo}, #{contactBatchTitle}, #{contactPhone}, #{contactUsername}, #{status}, #{remark}, #{retryCount}, #{addMethod}, #{nodeId}, #{errorReason}, #{source}, #{groupId}, #{groupName}, now())
     </insert>
 
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into tg_contact_assign_log (account_batch_no, account_batch_title, account_id, account_phone,
+            contact_batch_no, contact_batch_title, contact_phone, contact_username, status, remark, retry_count, add_method, node_id, error_reason, source, group_id, group_name, create_time)
+        values
+        <foreach collection="list" item="it" separator=",">
+            (#{it.accountBatchNo}, #{it.accountBatchTitle}, #{it.accountId}, #{it.accountPhone},
+            #{it.contactBatchNo}, #{it.contactBatchTitle}, #{it.contactPhone}, #{it.contactUsername}, #{it.status}, #{it.remark}, #{it.retryCount}, #{it.addMethod}, #{it.nodeId}, #{it.errorReason}, #{it.source}, #{it.groupId}, #{it.groupName}, now())
+        </foreach>
+    </insert>
+
+    <select id="selectAssignedContactPhones" resultType="java.lang.String">
+        select distinct contact_phone from tg_contact_assign_log
+        where contact_phone is not null and contact_phone != ''
+    </select>
+
+    <select id="selectAssignedContactUsernames" resultType="java.lang.String">
+        select distinct contact_username from tg_contact_assign_log
+        where contact_username is not null and contact_username != ''
+    </select>
+
 </mapper>

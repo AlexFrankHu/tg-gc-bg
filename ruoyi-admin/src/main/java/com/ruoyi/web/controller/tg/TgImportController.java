@@ -575,34 +575,31 @@ public class TgImportController extends BaseController
         // Determine import type from batch
         String importType = contactBatch != null && contactBatch.getImportType() != null ? contactBatch.getImportType() : "phone";
 
-        // --- Load existing friends per account ---
+        // --- Load existing friends for all accounts in one batched query ---
         Map<Integer, Set<String>> existingFriends = new HashMap<>();
+        List<Integer> accountIds = new ArrayList<>();
         for (TgTelethonAccount acc : accounts)
         {
-            Set<String> friendSet = new HashSet<>();
-            TgContact friendQuery = new TgContact();
-            friendQuery.setTgAccountId(acc.getId());
-            List<TgContact> friends = tgContactMapper.selectTgContactList(friendQuery);
-            for (TgContact f : friends)
-            {
-                if (f.getPhoneNumber() != null && !f.getPhoneNumber().isEmpty())
-                    friendSet.add("phone:" + f.getPhoneNumber());
-                if (f.getUsername() != null && !f.getUsername().isEmpty())
-                    friendSet.add("username:" + f.getUsername().toLowerCase());
-            }
-            existingFriends.put(acc.getId(), friendSet);
+            existingFriends.put(acc.getId(), new HashSet<>());
+            accountIds.add(acc.getId());
+        }
+        List<TgContact> allFriends = tgContactMapper.selectContactKeysByAccountIds(accountIds);
+        for (TgContact f : allFriends)
+        {
+            Set<String> friendSet = existingFriends.get(f.getTgAccountId());
+            if (friendSet == null) continue;
+            if (f.getPhoneNumber() != null && !f.getPhoneNumber().isEmpty())
+                friendSet.add("phone:" + f.getPhoneNumber());
+            if (f.getUsername() != null && !f.getUsername().isEmpty())
+                friendSet.add("username:" + f.getUsername().toLowerCase());
         }
 
-        // --- Load previously assigned contacts ---
+        // --- Load previously assigned contact keys (distinct, no full-row/join load) ---
         Set<String> previouslyAssigned = new HashSet<>();
-        List<TgContactAssignLog> allLogs = contactAssignLogMapper.selectList(new TgContactAssignLog());
-        for (TgContactAssignLog logItem : allLogs)
-        {
-            if (logItem.getContactPhone() != null && !logItem.getContactPhone().isEmpty())
-                previouslyAssigned.add("phone:" + logItem.getContactPhone());
-            if (logItem.getContactUsername() != null && !logItem.getContactUsername().isEmpty())
-                previouslyAssigned.add("username:" + logItem.getContactUsername().toLowerCase());
-        }
+        for (String p : contactAssignLogMapper.selectAssignedContactPhones())
+            previouslyAssigned.add("phone:" + p);
+        for (String u : contactAssignLogMapper.selectAssignedContactUsernames())
+            previouslyAssigned.add("username:" + u.toLowerCase());
 
         // --- Sort contacts: never-assigned first ---
         List<TgContactImportRecord> neverAssignedList = new ArrayList<>();
@@ -674,6 +671,8 @@ public class TgImportController extends BaseController
         // Only distribute and write assign logs with status=pending
         // Actual add-contact is done by Telethon polling timer
         int totalAssigned = 0;
+        final int INSERT_BATCH_SIZE = 1000;
+        List<TgContactAssignLog> pendingBatch = new ArrayList<>();
 
         for (Map.Entry<TgTelethonAccount, List<TgContactImportRecord>> entry : assignments.entrySet())
         {
@@ -711,9 +710,20 @@ public class TgImportController extends BaseController
                 logEntry.setGroupId(groupId);
                 logEntry.setGroupName(groupName);
 
-                contactAssignLogMapper.insert(logEntry);
+                pendingBatch.add(logEntry);
                 totalAssigned++;
+
+                if (pendingBatch.size() >= INSERT_BATCH_SIZE)
+                {
+                    contactAssignLogMapper.batchInsert(pendingBatch);
+                    pendingBatch.clear();
+                }
             }
+        }
+        if (!pendingBatch.isEmpty())
+        {
+            contactAssignLogMapper.batchInsert(pendingBatch);
+            pendingBatch.clear();
         }
 
         // Refresh contact batch stats

@@ -50,7 +50,8 @@ export function assignContacts(data) {
   return request({
     url: '/tg/import/assignContacts',
     method: 'post',
-    data: data
+    data: data,
+    timeout: 300000
   })
 }
 

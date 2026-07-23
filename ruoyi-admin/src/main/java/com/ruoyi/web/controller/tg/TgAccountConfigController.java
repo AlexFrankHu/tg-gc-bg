@@ -41,6 +41,12 @@ public class TgAccountConfigController extends BaseController
 {
     private static final Logger log = LoggerFactory.getLogger(TgAccountConfigController.class);
 
+    // Serialize batch proxy assignment per IP-group to avoid concurrent/duplicate
+    // requests (front-end retries on timeout) double-assigning IPs and clobbering
+    // the non-atomic bind counters.
+    private static final java.util.concurrent.ConcurrentHashMap<String, Object> BATCH_ASSIGN_LOCKS =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
     @Value("${tg-client-telethon.url:http://localhost:8807}")
     private String telethonUrl;
 
@@ -383,47 +389,60 @@ public class TgAccountConfigController extends BaseController
     @PutMapping("/proxy/batch/{batchNo}")
     public AjaxResult batchAssignProxy(@PathVariable("batchNo") String batchNo, @org.springframework.web.bind.annotation.RequestParam("groupNo") String groupNo)
     {
-        TgTelethonAccount query = new TgTelethonAccount();
-        query.setBatchNo(batchNo);
-        List<TgTelethonAccount> accounts = tgTelethonAccountService.selectTgTelethonAccountList(query);
-
-        // Filter out already deleted accounts
-        accounts.removeIf(a -> a.getIsDeleted() != null && a.getIsDeleted() == 1);
-
-        if (accounts.isEmpty()) return error("该批次下没有账号");
-
-        // Filter accounts that don't have proxy or need new proxy
-        List<TgProxyIp> available = tgProxyIpMapper.selectAvailableByGroupNo(groupNo);
-        if (available == null || available.isEmpty()) return error("该IP组下没有可用IP");
-
-        int assignedCount = 0;
-        int ipIndex = 0;
-        for (TgTelethonAccount account : accounts)
+        Object lock = BATCH_ASSIGN_LOCKS.computeIfAbsent(groupNo, k -> new Object());
+        synchronized (lock)
         {
-            // Re-fetch available IPs since bind counts change
-            if (ipIndex >= available.size())
+            TgTelethonAccount query = new TgTelethonAccount();
+            query.setBatchNo(batchNo);
+            List<TgTelethonAccount> accounts = tgTelethonAccountService.selectTgTelethonAccountList(query);
+
+            // Filter out already deleted accounts
+            accounts.removeIf(a -> a.getIsDeleted() != null && a.getIsDeleted() == 1);
+
+            if (accounts.isEmpty()) return error("该批次下没有账号");
+
+            // Skip accounts already bound to an IP in this group (idempotent retries)
+            accounts.removeIf(a -> a.getProxyIpId() != null && groupNo.equals(a.getProxyGroupNo()));
+
+            int alreadyAssigned = 0;
+            if (accounts.isEmpty())
             {
-                available = tgProxyIpMapper.selectAvailableByGroupNo(groupNo);
-                if (available == null || available.isEmpty())
+                return success("该批次账号已全部分配到该IP组，无需重复分配");
+            }
+
+            List<TgProxyIp> available = tgProxyIpMapper.selectAvailableByGroupNo(groupNo);
+            if (available == null || available.isEmpty()) return error("该IP组下没有可用IP");
+
+            int assignedCount = 0;
+            int ipIndex = 0;
+            for (TgTelethonAccount account : accounts)
+            {
+                // Re-fetch available IPs since bind counts change
+                if (ipIndex >= available.size())
                 {
-                    return success("IP不够，已分配 " + assignedCount + " 个账号，还有 " + (accounts.size() - assignedCount) + " 个账号未分配");
+                    available = tgProxyIpMapper.selectAvailableByGroupNo(groupNo);
+                    if (available == null || available.isEmpty())
+                    {
+                        return success("IP不够，已分配 " + assignedCount + " 个账号，还有 " + (accounts.size() - assignedCount) + " 个账号未分配");
+                    }
+                    ipIndex = 0;
                 }
-                ipIndex = 0;
+
+                TgProxyIp ip = available.get(ipIndex);
+                bindProxyToAccount(account, ip);
+                assignedCount++;
+
+                // Track in-memory bind count on the snapshot to decide when this IP is full
+                int newBind = (ip.getCurrentBindCount() != null ? ip.getCurrentBindCount() : 0) + 1;
+                ip.setCurrentBindCount(newBind);
+                if (ip.getMaxBindable() != null && newBind >= ip.getMaxBindable())
+                {
+                    ipIndex++;
+                }
             }
 
-            TgProxyIp ip = available.get(ipIndex);
-            bindProxyToAccount(account, ip);
-            assignedCount++;
-
-            // Check if this IP is now full
-            int newBind = (ip.getCurrentBindCount() != null ? ip.getCurrentBindCount() : 0) + 1;
-            if (ip.getMaxBindable() != null && newBind >= ip.getMaxBindable())
-            {
-                ipIndex++;
-            }
+            return success("批量分配完成，共分配 " + assignedCount + " 个账号");
         }
-
-        return success("批量分配完成，共分配 " + assignedCount + " 个账号");
     }
 
     private void bindProxyToAccount(TgTelethonAccount account, TgProxyIp ip)
@@ -442,10 +461,8 @@ public class TgAccountConfigController extends BaseController
         account.setProxyPassword(ip.getPassword());
         tgTelethonAccountService.updateAccountProxy(account);
 
-        // Update proxy bind count
-        ip.setCurrentBindCount((ip.getCurrentBindCount() != null ? ip.getCurrentBindCount() : 0) + 1);
-        ip.setHistoryBindCount((ip.getHistoryBindCount() != null ? ip.getHistoryBindCount() : 0) + 1);
-        tgProxyIpMapper.updateTgProxyIp(ip);
+        // Atomic bind-count increment (avoids lost updates under concurrent runs)
+        tgProxyIpMapper.incrementBindCount(ip.getId());
 
         // Write proxy assign log
         try {
@@ -476,12 +493,7 @@ public class TgAccountConfigController extends BaseController
     {
         if (account.getProxyIpId() != null)
         {
-            TgProxyIp oldIp = tgProxyIpMapper.selectTgProxyIpById(account.getProxyIpId());
-            if (oldIp != null && oldIp.getCurrentBindCount() != null && oldIp.getCurrentBindCount() > 0)
-            {
-                oldIp.setCurrentBindCount(oldIp.getCurrentBindCount() - 1);
-                tgProxyIpMapper.updateTgProxyIp(oldIp);
-            }
+            tgProxyIpMapper.decrementBindCount(account.getProxyIpId());
         }
     }
 

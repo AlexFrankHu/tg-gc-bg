@@ -19,4 +19,10 @@ public interface TgProxyIpMapper
     public int deleteTgProxyIpByIds(Integer[] ids);
 
     public List<TgProxyIp> selectAvailableByGroupNo(@Param("groupNo") String groupNo);
+
+    public int incrementBindCount(@Param("id") Integer id);
+
+    public int decrementBindCount(@Param("id") Integer id);
+
+    public int recalcBindCountByGroupNo(@Param("groupNo") String groupNo);
 }

@@ -87,4 +87,31 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         order by a.current_bind_count asc
     </select>
 
+    <update id="incrementBindCount">
+        update tg_proxy_ip
+        set current_bind_count = COALESCE(current_bind_count, 0) + 1,
+            history_bind_count = COALESCE(history_bind_count, 0) + 1
+        where id = #{id}
+    </update>
+
+    <update id="decrementBindCount">
+        update tg_proxy_ip
+        set current_bind_count = current_bind_count - 1
+        where id = #{id} AND current_bind_count &gt; 0
+    </update>
+
+    <update id="recalcBindCountByGroupNo">
+        update tg_proxy_ip p
+        set p.current_bind_count = (
+            select count(*) from tg_telethon_account a
+            where a.proxy_ip_id = p.id
+              AND (a.is_deleted IS NULL OR a.is_deleted = 0)
+        )
+        <where>
+            <if test="groupNo != null and groupNo != ''">
+                p.group_no = #{groupNo}
+            </if>
+        </where>
+    </update>
+
 </mapper>

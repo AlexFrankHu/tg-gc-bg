@@ -74,6 +74,14 @@ export function loginBatch(batchNo) {
   })
 }
 
+// 账号分组批量登录（按账号分组）
+export function loginByGroup(groupId) {
+  return request({
+    url: '/tg/account/loginByGroup/' + groupId,
+    method: 'put'
+  })
+}
+
 // 批量登出（按批次）
 export function logoutBatch(batchNo) {
   return request({

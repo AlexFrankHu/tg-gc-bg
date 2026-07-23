@@ -241,6 +241,31 @@ public class TgAccountConfigController extends BaseController
     }
 
     /**
+     * 账号分组批量登录 - 按账号分组将所有有代理的账号设置为login1状态
+     */
+    @PreAuthorize("@ss.hasPermi('tg:account:edit')")
+    @PutMapping("/loginByGroup/{groupId}")
+    public AjaxResult loginByGroup(@PathVariable("groupId") Integer groupId)
+    {
+        TgTelethonAccount query = new TgTelethonAccount();
+        query.setGroupId(groupId);
+        List<TgTelethonAccount> accounts = tgTelethonAccountService.selectTgTelethonAccountList(query);
+
+        int setCount = 0;
+        for (TgTelethonAccount acc : accounts)
+        {
+            if (acc.getIsDeleted() != null && acc.getIsDeleted() == 1) continue;
+            if ("online".equals(acc.getStatus())) continue;
+            if (acc.getProxyHost() != null && !acc.getProxyHost().isEmpty())
+            {
+                tgTelethonAccountService.updateStatusById(acc.getId(), "login1");
+                setCount++;
+            }
+        }
+        return success("设置成功等待登录，共设置 " + setCount + " 个账号");
+    }
+
+    /**
      * 批量登出 - 设置状态为 waitLogout(等待登出)，节点定时器轮询到后真正登出并释放资源
      */
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")

@@ -84,8 +84,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="batchNo != null and batchNo != ''">
                 AND a.batch_no = #{batchNo}
             </if>
-            <if test="groupId != null">
+            <if test="groupId != null and groupId != -1">
                 AND a.group_id = #{groupId}
+            </if>
+            <if test="groupId != null and groupId == -1">
+                AND (a.group_id is null or a.group_id = 0)
             </if>
             <if test="nodeId != null and nodeId != ''">
                 AND a.node_id = #{nodeId}

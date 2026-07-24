@@ -57,6 +57,7 @@
       </el-form-item>
       <el-form-item label="账号分组" prop="groupId">
         <el-select v-model="queryParams.groupId" placeholder="全部" clearable style="width: 200px" @change="handleQuery">
+          <el-option label="无分组" :value="-1" />
           <el-option v-for="g in queryGroupOptions" :key="g.id" :label="g.groupName" :value="g.id" />
         </el-select>
       </el-form-item>

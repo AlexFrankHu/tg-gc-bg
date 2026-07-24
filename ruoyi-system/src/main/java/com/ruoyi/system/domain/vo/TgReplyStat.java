@@ -10,8 +10,14 @@ public class TgReplyStat
     /** 统计日期 */
     private String statDate;
 
+    /** 账号数 */
+    private Long accountCount;
+
     /** 添加人数 */
     private Long totalAddCount;
+
+    /** 平均添加数 = 添加人数/账号数 */
+    private BigDecimal addPerCount;
 
     /** 发送人数 */
     private Long totalSendCount;
@@ -30,6 +36,12 @@ public class TgReplyStat
 
     public String getStatDate() { return statDate; }
     public void setStatDate(String statDate) { this.statDate = statDate; }
+
+    public Long getAccountCount() { return accountCount; }
+    public void setAccountCount(Long accountCount) { this.accountCount = accountCount; }
+
+    public BigDecimal getAddPerCount() { return addPerCount; }
+    public void setAddPerCount(BigDecimal addPerCount) { this.addPerCount = addPerCount; }
 
     public Long getTotalAddCount() { return totalAddCount; }
     public void setTotalAddCount(Long totalAddCount) { this.totalAddCount = totalAddCount; }

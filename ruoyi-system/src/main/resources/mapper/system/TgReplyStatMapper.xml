@@ -6,7 +6,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <resultMap type="com.ruoyi.system.domain.vo.TgReplyStat" id="TgReplyStatResult">
         <result property="statDate"        column="stat_date"         />
+        <result property="accountCount"    column="account_count"     />
         <result property="totalAddCount"   column="total_add_count"   />
+        <result property="addPerCount"     column="add_per_count"     />
         <result property="totalSendCount"  column="total_send_count"  />
         <result property="sendRatio"       column="send_ratio"        />
         <result property="sendReplyCount"  column="send_reply_count"  />
@@ -16,7 +18,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="selectReplyStat" resultMap="TgReplyStatResult">
         SELECT DATE(create_time) stat_date,
+               COUNT(DISTINCT tg_account_id) account_count,
                COUNT(1) total_add_count,
+               COUNT(1) / COUNT(DISTINCT tg_account_id) add_per_count,
                COUNT(IF(last_send_time IS NOT NULL, 1, NULL)) total_send_count,
                COUNT(IF(last_send_time IS NOT NULL, 1, NULL)) / COUNT(1) send_ratio,
                COUNT(IF(last_send_time IS NOT NULL AND last_receive_time IS NOT NULL, 1, NULL)) send_reply_count,

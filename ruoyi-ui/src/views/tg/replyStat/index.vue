@@ -28,7 +28,11 @@
 
     <el-table v-loading="loading" :data="statList" border :table-layout="'auto'">
       <el-table-column label="统计日期" align="center" prop="statDate" min-width="120" />
+      <el-table-column label="账号数" align="center" prop="accountCount" min-width="100" />
       <el-table-column label="添加人数" align="center" prop="totalAddCount" min-width="110" />
+      <el-table-column label="平均添加数" align="center" min-width="110">
+        <template #default="scope">{{ toNumber(scope.row.addPerCount) }}</template>
+      </el-table-column>
       <el-table-column label="发送人数" align="center" prop="totalSendCount" min-width="110" />
       <el-table-column label="添加发送率" align="center" min-width="120">
         <template #default="scope">{{ toPercent(scope.row.sendRatio) }}</template>
@@ -78,6 +82,13 @@ function disabledDate(time) {
   const min = new Date(today);
   min.setDate(min.getDate() - 29);
   return time.getTime() > today.getTime() || time.getTime() < min.getTime();
+}
+
+function toNumber(v) {
+  if (v === null || v === undefined || v === "") return "-";
+  const n = Number(v);
+  if (isNaN(n)) return "-";
+  return n.toFixed(2);
 }
 
 function toPercent(v) {

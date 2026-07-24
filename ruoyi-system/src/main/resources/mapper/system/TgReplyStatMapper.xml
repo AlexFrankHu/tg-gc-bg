@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgReplyStatMapper">
+
+    <resultMap type="com.ruoyi.system.domain.vo.TgReplyStat" id="TgReplyStatResult">
+        <result property="statDate"        column="stat_date"         />
+        <result property="totalAddCount"   column="total_add_count"   />
+        <result property="totalSendCount"  column="total_send_count"  />
+        <result property="sendRatio"       column="send_ratio"        />
+        <result property="sendReplyCount"  column="send_reply_count"  />
+        <result property="sendReplyRatio"  column="send_reply_ratio"  />
+        <result property="addReplyRatio"   column="add_reply_ratio"   />
+    </resultMap>
+
+    <select id="selectReplyStat" resultMap="TgReplyStatResult">
+        SELECT DATE(create_time) stat_date,
+               COUNT(1) total_add_count,
+               COUNT(IF(last_send_time IS NOT NULL, 1, NULL)) total_send_count,
+               COUNT(IF(last_send_time IS NOT NULL, 1, NULL)) / COUNT(1) send_ratio,
+               COUNT(IF(last_send_time IS NOT NULL AND last_receive_time IS NOT NULL, 1, NULL)) send_reply_count,
+               COUNT(IF(last_send_time IS NOT NULL AND last_receive_time IS NOT NULL, 1, NULL)) / COUNT(IF(last_send_time IS NOT NULL, 1, NULL)) send_reply_ratio,
+               COUNT(IF(last_send_time IS NOT NULL AND last_receive_time IS NOT NULL, 1, NULL)) / COUNT(1) add_reply_ratio
+        FROM tg_contact
+        WHERE create_time &gt;= #{startDate}
+        GROUP BY stat_date
+        ORDER BY stat_date DESC
+    </select>
+
+</mapper>

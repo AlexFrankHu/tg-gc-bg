@@ -174,7 +174,12 @@ function submitUpload() {
   const apiFn = currentImportType.value === 'phone' ? importContacts : importContactsByUsername
   const typeLabel = currentImportType.value === 'phone' ? '号码' : '用户名'
   apiFn(formData).then(res => {
-    ElMessage.success(`导入成功，共 ${res.data.totalCount} 个${typeLabel}`)
+    const d = res.data || {}
+    let msg = `导入成功，共 ${d.totalCount} 个${typeLabel}`
+    if (currentImportType.value === 'phone' && ((d.discardCount || 0) > 0 || (d.duplicateCount || 0) > 0)) {
+      msg += `；已过滤 废弃(在账号列表) ${d.discardCount || 0} 个、重复 ${d.duplicateCount || 0} 个`
+    }
+    ElMessage.success(msg)
     uploadDialogVisible.value = false
     selectedFile.value = null
     getList()

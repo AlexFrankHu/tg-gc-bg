@@ -105,4 +105,10 @@ public class TgTelethonAccountServiceImpl implements ITgTelethonAccountService
     {
         return tgTelethonAccountMapper.batchUpdateStatus(ids, status);
     }
+
+    @Override
+    public List<String> selectAllPhones()
+    {
+        return tgTelethonAccountMapper.selectAllPhones();
+    }
 }

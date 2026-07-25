@@ -37,4 +37,7 @@ public interface ITgTelethonAccountService
     public int updateStatusById(Integer id, String status);
 
     public int batchUpdateStatus(List<Integer> ids, String status);
+
+    /** 查询所有账号手机号（用于导入去重过滤） */
+    public List<String> selectAllPhones();
 }

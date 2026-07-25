@@ -45,4 +45,7 @@ public interface TgTelethonAccountMapper
 
     public List<TgTelethonAccount> selectAccountMessageStats();
     public int batchUpdateAccountMessageCounts(@Param("list") List<TgTelethonAccount> list);
+
+    /** 查询所有账号手机号（用于导入去重过滤） */
+    public List<String> selectAllPhones();
 }

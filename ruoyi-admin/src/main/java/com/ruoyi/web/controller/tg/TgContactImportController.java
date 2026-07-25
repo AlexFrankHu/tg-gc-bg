@@ -13,8 +13,11 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.system.domain.TgContactImportBatch;
 import com.ruoyi.system.domain.TgContactImportRecord;
+import com.ruoyi.system.domain.TgContactImportFiltered;
 import com.ruoyi.system.service.ITgContactImportBatchService;
 import com.ruoyi.system.service.ITgContactImportRecordService;
+import com.ruoyi.system.service.ITgContactImportFilteredService;
+import com.ruoyi.system.service.ITgTelethonAccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +35,24 @@ public class TgContactImportController extends BaseController
 
     @Autowired
     private ITgContactImportRecordService recordService;
+
+    @Autowired
+    private ITgContactImportFilteredService filteredService;
+
+    @Autowired
+    private ITgTelethonAccountService telethonAccountService;
+
+    /**
+     * 查询某批次被过滤的号码（重复/废弃）
+     */
+    @PreAuthorize("@ss.hasPermi('tg:contactImport:list')")
+    @GetMapping("/filtered/list")
+    public TableDataInfo filteredList(@RequestParam("batchNo") String batchNo)
+    {
+        startPage();
+        List<TgContactImportFiltered> list = filteredService.selectByBatchNo(batchNo);
+        return getDataTable(list);
+    }
 
     /**
      * 查询好友导入批次列表
@@ -139,7 +160,26 @@ public class TgContactImportController extends BaseController
                 return error("Excel文件为空");
             }
 
+            boolean isPhone = "phone".equals(importType);
+
+            // 手机号导入: 预加载账号列表手机号(去+归一化), 用于过滤"废弃"
+            Set<String> accountPhones = new HashSet<>();
+            if (isPhone)
+            {
+                for (String p : telethonAccountService.selectAllPhones())
+                {
+                    if (p == null) continue;
+                    String np = p.trim();
+                    if (np.startsWith("+")) np = np.substring(1);
+                    if (!np.isEmpty()) accountPhones.add(np);
+                }
+            }
+
             List<String> values = new ArrayList<>();
+            List<TgContactImportFiltered> filteredList = new ArrayList<>();
+            Set<String> kept = new HashSet<>();        // 已保留的号码(用于识别重复)
+            Set<String> discarded = new HashSet<>();   // 已记录为"废弃"的号码(每个唯一号只记一次)
+
             for (int i = 0; i <= sheet.getLastRowNum(); i++)
             {
                 Row row = sheet.getRow(i);
@@ -148,13 +188,28 @@ public class TgContactImportController extends BaseController
                 if (cell == null) continue;
 
                 String val = getCellValueAsString(cell).trim();
-                if ("phone".equals(importType))
+                if (isPhone)
                 {
-                    if (!val.isEmpty() && val.matches("\\+?\\d+"))
+                    if (val.isEmpty() || !val.matches("\\+?\\d+")) continue;
+                    if (val.startsWith("+")) val = val.substring(1);
+
+                    // 1) 在账号列表中 -> 废弃
+                    if (accountPhones.contains(val))
                     {
-                        if (val.startsWith("+")) val = val.substring(1);
-                        values.add(val);
+                        if (discarded.add(val))
+                        {
+                            filteredList.add(newFiltered(val, TgContactImportFiltered.TYPE_DISCARD));
+                        }
+                        continue;
                     }
+                    // 2) 文件内重复 -> 重复
+                    if (!kept.add(val))
+                    {
+                        filteredList.add(newFiltered(val, TgContactImportFiltered.TYPE_DUPLICATE));
+                        continue;
+                    }
+                    // 3) 干净号码 -> 保留
+                    values.add(val);
                 }
                 else
                 {
@@ -167,9 +222,9 @@ public class TgContactImportController extends BaseController
                 }
             }
 
-            if (values.isEmpty())
+            if (values.isEmpty() && filteredList.isEmpty())
             {
-                return error("phone".equals(importType) ? "未找到有效的手机号码" : "未找到有效的用户名");
+                return error(isPhone ? "未找到有效的手机号码" : "未找到有效的用户名");
             }
 
             // Create batch
@@ -189,7 +244,7 @@ public class TgContactImportController extends BaseController
             {
                 TgContactImportRecord record = new TgContactImportRecord();
                 record.setBatchNo(batchNo);
-                if ("phone".equals(importType))
+                if (isPhone)
                 {
                     record.setPhone(val);
                 }
@@ -208,9 +263,26 @@ public class TgContactImportController extends BaseController
                 recordService.batchInsert(chunk);
             }
 
+            // 写入过滤记录(废弃/重复), 带批次号
+            int duplicateCount = 0;
+            int discardCount = 0;
+            for (TgContactImportFiltered f : filteredList)
+            {
+                f.setBatchNo(batchNo);
+                if (TgContactImportFiltered.TYPE_DUPLICATE.equals(f.getFilterType())) duplicateCount++;
+                else discardCount++;
+            }
+            for (int i = 0; i < filteredList.size(); i += chunkSize)
+            {
+                List<TgContactImportFiltered> chunk = filteredList.subList(i, Math.min(i + chunkSize, filteredList.size()));
+                filteredService.batchInsert(chunk);
+            }
+
             Map<String, Object> result = new HashMap<>();
             result.put("batchNo", batchNo);
             result.put("totalCount", values.size());
+            result.put("discardCount", discardCount);
+            result.put("duplicateCount", duplicateCount);
             return success(result);
         }
         catch (Exception e)
@@ -218,6 +290,14 @@ public class TgContactImportController extends BaseController
             log.error("导入好友失败", e);
             return error("导入失败: " + e.getMessage());
         }
+    }
+
+    private TgContactImportFiltered newFiltered(String phone, String type)
+    {
+        TgContactImportFiltered f = new TgContactImportFiltered();
+        f.setPhone(phone);
+        f.setFilterType(type);
+        return f;
     }
 
     private String getCellValueAsString(Cell cell)

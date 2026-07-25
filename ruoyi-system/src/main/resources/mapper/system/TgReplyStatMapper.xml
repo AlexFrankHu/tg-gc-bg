@@ -27,7 +27,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                COUNT(IF(last_send_time IS NOT NULL AND last_receive_time IS NOT NULL, 1, NULL)) / COUNT(IF(last_send_time IS NOT NULL, 1, NULL)) send_reply_ratio,
                COUNT(IF(last_send_time IS NOT NULL AND last_receive_time IS NOT NULL, 1, NULL)) / COUNT(1) add_reply_ratio
         FROM tg_contact
-        WHERE create_time &gt;= #{startDate}
+        WHERE create_time &gt;= #{startDate} AND source = 'import'
         GROUP BY stat_date
         ORDER BY stat_date DESC
     </select>

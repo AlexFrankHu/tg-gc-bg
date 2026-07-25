@@ -68,9 +68,10 @@
         </template>
       </el-table-column>
       <el-table-column label="导入时间" align="center" prop="importTime" width="180" />
-      <el-table-column label="操作" align="center" width="180">
+      <el-table-column label="操作" align="center" width="240">
         <template #default="scope">
           <el-button link type="primary" @click="handleDetail(scope.row)">导入详情</el-button>
+          <el-button link type="warning" @click="handleFiltered(scope.row)">过滤记录</el-button>
           <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
@@ -192,6 +193,10 @@ function submitUpload() {
 
 function handleDetail(row) {
   router.push({ path: '/tg/contactImport/detail', query: { batchNo: row.batchNo, title: row.title || row.batchNo, importType: row.importType || 'phone' } })
+}
+
+function handleFiltered(row) {
+  router.push({ path: '/tg/contactImport/filtered', query: { batchNo: row.batchNo, title: row.title || row.batchNo } })
 }
 
 function handleEditTitle(row) {

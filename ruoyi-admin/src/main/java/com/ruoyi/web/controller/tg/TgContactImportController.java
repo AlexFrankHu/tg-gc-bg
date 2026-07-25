@@ -47,10 +47,11 @@ public class TgContactImportController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('tg:contactImport:list')")
     @GetMapping("/filtered/list")
-    public TableDataInfo filteredList(@RequestParam("batchNo") String batchNo)
+    public TableDataInfo filteredList(@RequestParam("batchNo") String batchNo,
+                                      @RequestParam(value = "filterType", required = false) String filterType)
     {
         startPage();
-        List<TgContactImportFiltered> list = filteredService.selectByBatchNo(batchNo);
+        List<TgContactImportFiltered> list = filteredService.selectByBatchNo(batchNo, filterType);
         return getDataTable(list);
     }
 

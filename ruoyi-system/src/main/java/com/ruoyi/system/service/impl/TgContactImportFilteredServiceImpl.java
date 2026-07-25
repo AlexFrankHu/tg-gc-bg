@@ -14,9 +14,9 @@ public class TgContactImportFilteredServiceImpl implements ITgContactImportFilte
     private TgContactImportFilteredMapper mapper;
 
     @Override
-    public List<TgContactImportFiltered> selectByBatchNo(String batchNo)
+    public List<TgContactImportFiltered> selectByBatchNo(String batchNo, String filterType)
     {
-        return mapper.selectByBatchNo(batchNo);
+        return mapper.selectByBatchNo(batchNo, filterType);
     }
 
     @Override

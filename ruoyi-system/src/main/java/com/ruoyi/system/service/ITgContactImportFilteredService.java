@@ -5,7 +5,7 @@ import com.ruoyi.system.domain.TgContactImportFiltered;
 
 public interface ITgContactImportFilteredService
 {
-    public List<TgContactImportFiltered> selectByBatchNo(String batchNo);
+    public List<TgContactImportFiltered> selectByBatchNo(String batchNo, String filterType);
 
     public int batchInsert(List<TgContactImportFiltered> list);
 

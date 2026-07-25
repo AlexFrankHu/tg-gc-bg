@@ -12,10 +12,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="createTime"  column="create_time" />
     </resultMap>
 
-    <select id="selectByBatchNo" parameterType="String" resultMap="TgContactImportFilteredResult">
+    <select id="selectByBatchNo" resultMap="TgContactImportFilteredResult">
         select id, batch_no, phone, filter_type, create_time
         from tg_contact_import_filtered
         where batch_no = #{batchNo}
+        <if test="filterType != null and filterType != ''">
+            and filter_type = #{filterType}
+        </if>
         order by id asc
     </select>
 

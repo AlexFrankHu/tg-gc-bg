@@ -43,6 +43,15 @@ export function listContactImportRecord(query) {
   })
 }
 
+// 查询某批次被过滤的号码（重复/废弃）
+export function listContactImportFiltered(query) {
+  return request({
+    url: '/tg/contactImport/filtered/list',
+    method: 'get',
+    params: query
+  })
+}
+
 // 导入好友-手机号（上传xlsx）
 export function importContacts(data) {
   return request({

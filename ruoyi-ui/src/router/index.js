@@ -195,6 +195,12 @@ export const dynamicRoutes = [
         component: () => import('@/views/tg/contactImport/detail'),
         name: 'ContactImportDetail',
         meta: { title: '好友导入详情', activeMenu: '/tg/contactImport' }
+      },
+      {
+        path: '/tg/contactImport/filtered',
+        component: () => import('@/views/tg/contactImport/filtered'),
+        name: 'ContactImportFiltered',
+        meta: { title: '导入过滤记录', activeMenu: '/tg/contactImport' }
       }
     ]
   }

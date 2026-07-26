@@ -36,7 +36,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 AND public_ip like concat('%', #{publicIp}, '%')
             </if>
         </where>
-        order by last_active_time desc
+        order by create_time desc
     </select>
 
     <select id="selectTgClusterNodeById" parameterType="String" resultMap="TgClusterNodeResult">

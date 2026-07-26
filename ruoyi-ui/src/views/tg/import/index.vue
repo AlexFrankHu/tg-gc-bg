@@ -206,7 +206,7 @@ const assignContactBatchNo = ref("");
 const assignContactLoading = ref(false);
 const assignContactRow = ref(null);
 const contactBatchOptions = ref([]);
-const assignMode = ref("average");
+const assignMode = ref("fixed");
 const assignFixedCount = ref(1);
 const addMethod = ref("one_by_one");
 
@@ -331,7 +331,7 @@ function submitBatchProxy() {
 function handleAssignContacts(row) {
   assignContactRow.value = row;
   assignContactBatchNo.value = "";
-  assignMode.value = "average";
+  assignMode.value = "fixed";
   assignFixedCount.value = 1;
   addMethod.value = "one_by_one";
   assignContactVisible.value = true;

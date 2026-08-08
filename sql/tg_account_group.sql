@@ -1,3 +1,6 @@
+-- 强制使用 utf8mb4 导入, 否则客户端默认字符集会把中文二次编码成乱码
+SET NAMES utf8mb4;
+
 -- 账号分组功能 数据库迁移
 -- 1. 账号分组表
 CREATE TABLE IF NOT EXISTS `tg_account_group` (

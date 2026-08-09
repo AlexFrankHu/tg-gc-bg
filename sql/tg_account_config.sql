@@ -1,3 +1,6 @@
+-- 强制使用 utf8mb4 导入, 否则客户端默认字符集会把中文二次编码成乱码
+SET NAMES utf8mb4;
+
 -- ----------------------------
 -- Telegram账号配置表
 -- 该表由 tg-client-server 工程使用，tg-client-bg 管理后台共用同一数据库

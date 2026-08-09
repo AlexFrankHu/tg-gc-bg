@@ -24,6 +24,8 @@ public class TgContact extends BaseEntity
     private Boolean isPremium;
     private Boolean isVerified;
     private String userType;
+    /** 好友类型 real-好友 fake-伪好友(仅解析不加联系人) */
+    private String contactType;
     private String restrictionReason;
     private String bio;
     private Integer photoSmallFileId;
@@ -91,6 +93,8 @@ public class TgContact extends BaseEntity
     public void setIsVerified(Boolean isVerified) { this.isVerified = isVerified; }
     public String getUserType() { return userType; }
     public void setUserType(String userType) { this.userType = userType; }
+    public String getContactType() { return contactType; }
+    public void setContactType(String contactType) { this.contactType = contactType; }
     public String getRestrictionReason() { return restrictionReason; }
     public void setRestrictionReason(String restrictionReason) { this.restrictionReason = restrictionReason; }
     public String getBio() { return bio; }

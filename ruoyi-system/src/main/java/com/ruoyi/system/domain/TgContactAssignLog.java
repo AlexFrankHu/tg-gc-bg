@@ -23,6 +23,8 @@ public class TgContactAssignLog extends BaseEntity
     private String accountStatus;
     /** 添加方式(one_by_one逐个添加 contact_import联系人导入) */
     private String addMethod;
+    /** 好友类型 real-好友 fake-伪好友(仅解析不加联系人) */
+    private String contactType;
     /** 失败原因 */
     private String errorReason;
     /** 来源 import-账号导入 group-账号分组 */
@@ -73,6 +75,8 @@ public class TgContactAssignLog extends BaseEntity
     public void setNodeId(String nodeId) { this.nodeId = nodeId; }
     public String getAddMethod() { return addMethod; }
     public void setAddMethod(String addMethod) { this.addMethod = addMethod; }
+    public String getContactType() { return contactType; }
+    public void setContactType(String contactType) { this.contactType = contactType; }
     public String getErrorReason() { return errorReason; }
     public void setErrorReason(String errorReason) { this.errorReason = errorReason; }
     public String getSource() { return source; }

@@ -463,6 +463,7 @@ public class TgImportController extends BaseController
         String mode = (String) params.get("mode"); // "average" or "fixed"
         Integer fixedCount = params.get("fixedCount") != null ? Integer.parseInt(params.get("fixedCount").toString()) : null;
         String addMethod = params.get("addMethod") != null ? (String) params.get("addMethod") : "one_by_one";
+        String contactType = normalizeContactType(params.get("contactType"));
 
         if (accountBatchNo == null || contactBatchNo == null || mode == null)
         {
@@ -506,7 +507,7 @@ public class TgImportController extends BaseController
             return error("以下账号未分配节点，无法分配好友: " + String.join(", ", noNodeAccounts));
         }
 
-        return doAssignToAccounts(accounts, contactBatchNo, mode, fixedCount, addMethod,
+        return doAssignToAccounts(accounts, contactBatchNo, mode, fixedCount, addMethod, contactType,
             "import", accountBatchNo, accountBatchTitle, null, null);
     }
 
@@ -522,6 +523,7 @@ public class TgImportController extends BaseController
         String mode = (String) params.get("mode"); // "average" or "fixed"
         Integer fixedCount = params.get("fixedCount") != null ? Integer.parseInt(params.get("fixedCount").toString()) : null;
         String addMethod = params.get("addMethod") != null ? (String) params.get("addMethod") : "one_by_one";
+        String contactType = normalizeContactType(params.get("contactType"));
 
         if (groupId == null || contactBatchNo == null || mode == null)
         {
@@ -565,8 +567,16 @@ public class TgImportController extends BaseController
             return error("以下账号未分配节点，无法分配好友: " + String.join(", ", noNodeAccounts));
         }
 
-        return doAssignToAccounts(accounts, contactBatchNo, mode, fixedCount, addMethod,
+        return doAssignToAccounts(accounts, contactBatchNo, mode, fixedCount, addMethod, contactType,
             "group", null, null, groupId, groupName);
+    }
+
+    /**
+     * 好友类型: fake-伪好友(节点仅 resolvePhone 解析后入库, 不加入TG联系人), 其余一律按 real-好友处理。
+     */
+    private String normalizeContactType(Object raw)
+    {
+        return "fake".equals(raw) ? "fake" : "real";
     }
 
     /**
@@ -574,7 +584,7 @@ public class TgImportController extends BaseController
      * source=import 时携带账号批次信息; source=group 时携带分组信息。
      */
     private AjaxResult doAssignToAccounts(List<TgTelethonAccount> accounts, String contactBatchNo,
-            String mode, Integer fixedCount, String addMethod,
+            String mode, Integer fixedCount, String addMethod, String contactType,
             String source, String accountBatchNo, String accountBatchTitle,
             Integer groupId, String groupName)
     {
@@ -719,6 +729,7 @@ public class TgImportController extends BaseController
                 logEntry.setStatus("pending");
                 logEntry.setRetryCount(0);
                 logEntry.setAddMethod(addMethod);
+                logEntry.setContactType(contactType);
                 logEntry.setNodeId(acc.getNodeId());
                 logEntry.setSource(source);
                 logEntry.setGroupId(groupId);
@@ -793,6 +804,7 @@ public class TgImportController extends BaseController
             vo.setAccountPhone(l.getAccountPhone());
             vo.setContactBatchTitle(l.getContactBatchTitle());
             vo.setContactInfo(l.getContactPhone() != null && !l.getContactPhone().isEmpty() ? l.getContactPhone() : l.getContactUsername());
+            vo.setContactTypeLabel("fake".equals(l.getContactType()) ? "伪好友" : "好友");
             String statusLabel = "pending".equals(l.getStatus()) ? "待办" : "success".equals(l.getStatus()) ? "成功" : "failed".equals(l.getStatus()) ? "失败" : "skipped".equals(l.getStatus()) ? "跳过" : l.getStatus();
             vo.setStatusLabel(statusLabel);
             vo.setRetryCount(l.getRetryCount());

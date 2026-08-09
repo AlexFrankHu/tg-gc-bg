@@ -31,6 +31,9 @@ public class TgContactAssignLogExport
     @Excel(name = "好友号码/用户名")
     private String contactInfo;
 
+    @Excel(name = "好友类型")
+    private String contactTypeLabel;
+
     @Excel(name = "状态")
     private String statusLabel;
 
@@ -61,6 +64,8 @@ public class TgContactAssignLogExport
     public void setContactBatchTitle(String contactBatchTitle) { this.contactBatchTitle = contactBatchTitle; }
     public String getContactInfo() { return contactInfo; }
     public void setContactInfo(String contactInfo) { this.contactInfo = contactInfo; }
+    public String getContactTypeLabel() { return contactTypeLabel; }
+    public void setContactTypeLabel(String contactTypeLabel) { this.contactTypeLabel = contactTypeLabel; }
     public String getStatusLabel() { return statusLabel; }
     public void setStatusLabel(String statusLabel) { this.statusLabel = statusLabel; }
     public Integer getRetryCount() { return retryCount; }

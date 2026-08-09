@@ -21,6 +21,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="accountStatus"    column="account_status"     />
         <result property="nodeId"          column="node_id"          />
         <result property="addMethod"       column="add_method"       />
+        <result property="contactType"     column="contact_type"     />
         <result property="errorReason"     column="error_reason"     />
         <result property="source"          column="source"          />
         <result property="groupId"         column="group_id"         />
@@ -36,6 +37,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="contactBatchNo != null and contactBatchNo != ''">AND l.contact_batch_no = #{contactBatchNo}</if>
             <if test="accountPhone != null and accountPhone != ''">AND l.account_phone like concat('%', #{accountPhone}, '%')</if>
             <if test="status != null and status != ''">AND l.status = #{status}</if>
+            <if test="contactType != null and contactType != ''">AND l.contact_type = #{contactType}</if>
             <if test="source != null and source != ''">AND l.source = #{source}</if>
             <if test="groupId != null">AND l.group_id = #{groupId}</if>
             <if test="params.beginCreateTime != null and params.beginCreateTime != ''">AND l.create_time &gt;= #{params.beginCreateTime}</if>
@@ -46,18 +48,18 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <insert id="insert" parameterType="TgContactAssignLog">
         insert into tg_contact_assign_log (account_batch_no, account_batch_title, account_id, account_phone,
-            contact_batch_no, contact_batch_title, contact_phone, contact_username, status, remark, retry_count, add_method, node_id, error_reason, source, group_id, group_name, create_time)
+            contact_batch_no, contact_batch_title, contact_phone, contact_username, status, remark, retry_count, add_method, contact_type, node_id, error_reason, source, group_id, group_name, create_time)
         values (#{accountBatchNo}, #{accountBatchTitle}, #{accountId}, #{accountPhone},
-            #{contactBatchNo}, #{contactBatchTitle}, #{contactPhone}, #{contactUsername}, #{status}, #{remark}, #{retryCount}, #{addMethod}, #{nodeId}, #{errorReason}, #{source}, #{groupId}, #{groupName}, now())
+            #{contactBatchNo}, #{contactBatchTitle}, #{contactPhone}, #{contactUsername}, #{status}, #{remark}, #{retryCount}, #{addMethod}, #{contactType}, #{nodeId}, #{errorReason}, #{source}, #{groupId}, #{groupName}, now())
     </insert>
 
     <insert id="batchInsert" parameterType="java.util.List">
         insert into tg_contact_assign_log (account_batch_no, account_batch_title, account_id, account_phone,
-            contact_batch_no, contact_batch_title, contact_phone, contact_username, status, remark, retry_count, add_method, node_id, error_reason, source, group_id, group_name, create_time)
+            contact_batch_no, contact_batch_title, contact_phone, contact_username, status, remark, retry_count, add_method, contact_type, node_id, error_reason, source, group_id, group_name, create_time)
         values
         <foreach collection="list" item="it" separator=",">
             (#{it.accountBatchNo}, #{it.accountBatchTitle}, #{it.accountId}, #{it.accountPhone},
-            #{it.contactBatchNo}, #{it.contactBatchTitle}, #{it.contactPhone}, #{it.contactUsername}, #{it.status}, #{it.remark}, #{it.retryCount}, #{it.addMethod}, #{it.nodeId}, #{it.errorReason}, #{it.source}, #{it.groupId}, #{it.groupName}, now())
+            #{it.contactBatchNo}, #{it.contactBatchTitle}, #{it.contactPhone}, #{it.contactUsername}, #{it.status}, #{it.remark}, #{it.retryCount}, #{it.addMethod}, #{it.contactType}, #{it.nodeId}, #{it.errorReason}, #{it.source}, #{it.groupId}, #{it.groupName}, now())
         </foreach>
     </insert>
 

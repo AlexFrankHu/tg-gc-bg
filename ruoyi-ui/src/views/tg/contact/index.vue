@@ -23,6 +23,12 @@
           <el-option label="已注销" value="deleted" />
         </el-select>
       </el-form-item>
+      <el-form-item label="好友类型" prop="contactType">
+        <el-select v-model="queryParams.contactType" placeholder="全部" clearable style="width: 120px">
+          <el-option label="好友" value="real" />
+          <el-option label="伪好友" value="fake" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="节点ID" prop="nodeId">
         <el-input v-model="queryParams.nodeId" placeholder="请输入节点ID" clearable style="width: 160px" @keyup.enter="handleQuery" />
       </el-form-item>
@@ -78,6 +84,12 @@
           </template>
         </el-table-column>
         <el-table-column label="手机号" align="center" prop="phoneNumber" min-width="150" />
+        <el-table-column label="好友类型" align="center" prop="contactType" min-width="100">
+          <template #default="scope">
+            <el-tag v-if="scope.row.contactType === 'fake'" type="warning">伪好友</el-tag>
+            <el-tag v-else type="info">好友</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="类型" align="center" prop="userType" min-width="90">
           <template #default="scope">
             <el-tag v-if="scope.row.userType === 'regular'" type="success">普通</el-tag>
@@ -294,6 +306,7 @@ const queryParams = ref({
   phoneNumber: undefined,
   userId: undefined,
   userType: undefined,
+  contactType: undefined,
   nodeId: undefined,
 });
 

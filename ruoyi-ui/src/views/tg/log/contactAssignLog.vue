@@ -12,6 +12,12 @@
           <el-option label="跳过" value="skipped" />
         </el-select>
       </el-form-item>
+      <el-form-item label="好友类型" prop="contactType">
+        <el-select v-model="queryParams.contactType" placeholder="全部" clearable style="width: 120px">
+          <el-option label="好友" value="real" />
+          <el-option label="伪好友" value="fake" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="来源" prop="source">
         <el-select v-model="queryParams.source" placeholder="全部" clearable style="width: 120px">
           <el-option label="账号导入" value="import" />
@@ -68,6 +74,12 @@
           {{ scope.row.contactPhone || scope.row.contactUsername || '' }}
         </template>
       </el-table-column>
+      <el-table-column label="好友类型" align="center" prop="contactType" width="100">
+        <template #default="scope">
+          <el-tag type="warning" v-if="scope.row.contactType === 'fake'">伪好友</el-tag>
+          <el-tag type="info" v-else>好友</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="状态" align="center" prop="status" width="100">
         <template #default="scope">
           <el-tag type="success" v-if="scope.row.status === 'success'">成功</el-tag>
@@ -110,6 +122,7 @@ const queryParams = ref({
   pageSize: 20,
   accountPhone: undefined,
   status: undefined,
+  contactType: undefined,
   source: undefined,
 });
 
@@ -135,6 +148,7 @@ function handleQuery() {
 function resetQuery() {
   queryParams.value.accountPhone = undefined;
   queryParams.value.status = undefined;
+  queryParams.value.contactType = undefined;
   queryParams.value.source = undefined;
   dateRange.value = [];
   handleQuery();

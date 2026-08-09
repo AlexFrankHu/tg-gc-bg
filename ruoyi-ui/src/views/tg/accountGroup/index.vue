@@ -78,7 +78,16 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="添加方式">
+        <el-form-item label="好友类型">
+          <el-radio-group v-model="contactType">
+            <el-radio value="real">添加好友</el-radio>
+            <el-radio value="fake">添加伪好友</el-radio>
+          </el-radio-group>
+          <div v-if="contactType === 'fake'" style="color: #909399; font-size: 12px; line-height: 1.5;">
+            伪好友: 仅解析手机号获取用户信息后入库, 不加入TG联系人, 之后直接发消息
+          </div>
+        </el-form-item>
+        <el-form-item label="添加方式" v-if="contactType === 'real'">
           <el-radio-group v-model="addMethod">
             <el-radio value="one_by_one">逐个添加</el-radio>
             <el-radio value="batch_import">联系人导入</el-radio>
@@ -136,6 +145,7 @@ const contactBatchOptions = ref([]);
 const assignMode = ref("fixed");
 const assignFixedCount = ref(1);
 const addMethod = ref("one_by_one");
+const contactType = ref("real");
 
 function getList() {
   loading.value = true;
@@ -194,6 +204,7 @@ function handleAssignContacts(row) {
   assignMode.value = "fixed";
   assignFixedCount.value = 1;
   addMethod.value = "one_by_one";
+  contactType.value = "real";
   assignContactVisible.value = true;
   listAllContactImportBatch().then(res => {
     if (res.code === 200) {
@@ -210,7 +221,8 @@ function submitAssignContacts() {
     contactBatchNo: assignContactBatchNo.value,
     mode: assignMode.value,
     fixedCount: assignMode.value === 'fixed' ? assignFixedCount.value : null,
-    addMethod: addMethod.value,
+    addMethod: contactType.value === 'fake' ? 'one_by_one' : addMethod.value,
+    contactType: contactType.value,
   };
   assignContactsByGroup(data).then(res => {
     if (res.code === 200) {

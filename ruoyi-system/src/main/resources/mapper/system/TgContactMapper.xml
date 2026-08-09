@@ -18,6 +18,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="isPremium"       column="is_premium"       />
         <result property="isVerified"      column="is_verified"      />
         <result property="userType"        column="user_type"        />
+        <result property="contactType"     column="contact_type"     />
         <result property="restrictionReason" column="restriction_reason" />
         <result property="bio"             column="bio"              />
         <result property="photoSmallFileId" column="photo_small_file_id" />
@@ -37,7 +38,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <sql id="selectTgContactVo">
         select id, tg_account_id, user_id, first_name, last_name, nickname, username,
-               phone_number, is_mutual, is_bot, is_premium, is_verified, user_type,
+               phone_number, is_mutual, is_bot, is_premium, is_verified, user_type, contact_type,
                restriction_reason, bio, photo_small_file_id, photo_big_file_id,
                last_online_time, last_send_time, last_receive_time, auto_reply, is_deregistered,
                total_msg_count, account_sent_count, friend_sent_count, node_id, create_time, update_time
@@ -66,6 +67,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             </if>
             <if test="userType != null and userType != ''">
                 AND user_type = #{userType}
+            </if>
+            <if test="contactType != null and contactType != ''">
+                AND contact_type = #{contactType}
             </if>
             <if test="userId != null">
                 AND user_id = #{userId}

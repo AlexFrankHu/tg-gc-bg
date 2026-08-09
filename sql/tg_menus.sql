@@ -39,8 +39,20 @@ VALUES (2008, '代理分组', 2000, 8, 'proxyGroup', 'tg/proxyGroup/index', 1, 0
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, remark)
 VALUES (2009, '代理IP', 2000, 9, 'proxyIp', 'tg/proxyIp/index', 1, 0, 'C', '0', '0', 'tg:proxyIp:list', 'server', 'admin', sysdate(), '');
 
+-- 日志目录 (二级目录组件必须是 ParentView)
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, remark)
-VALUES (2010, '操作日志', 2000, 10, 'log', 'tg/log/index', 1, 0, 'C', '0', '0', 'tg:log:list', 'log', 'admin', sysdate(), '');
+VALUES (2010, '日志管理', 2000, 10, 'log', 'ParentView', 1, 0, 'M', '0', '0', '', 'log', 'admin', sysdate(), '日志目录');
+
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, remark) VALUES
+(2012, '登录日志',     2010, 1, 'loginLog',         'tg/log/loginLog',         1, 0, 'C', '0', '0', 'tg:import:list', 'log', 'admin', sysdate(), ''),
+(2013, '好友分配日志', 2010, 2, 'contactAssignLog', 'tg/log/contactAssignLog', 1, 0, 'C', '0', '0', 'tg:import:list', 'log', 'admin', sysdate(), ''),
+(2014, '自动回复日志', 2010, 3, 'autoReplyLog',     'tg/log/autoReplyLog',     1, 0, 'C', '0', '0', 'tg:import:list', 'log', 'admin', sysdate(), ''),
+(2015, '发送失败日志', 2010, 4, 'sendFailLog',      'tg/log/sendFailLog',      1, 0, 'C', '0', '0', 'tg:import:list', 'log', 'admin', sysdate(), ''),
+(2016, '代理分配日志', 2010, 5, 'proxyAssignLog',   'tg/log/proxyAssignLog',   1, 0, 'C', '0', '0', 'tg:proxyIp:list', 'log', 'admin', sysdate(), '');
+
+INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, remark) VALUES
+(2017, '数据统计', 2000, 11, 'replyStat',    'tg/replyStat/index',    1, 0, 'C', '0', '0', 'tg:replyStat:list',    'chart',  'admin', sysdate(), '自动回复率统计'),
+(2018, '系统配置', 2000, 12, 'systemConfig', 'tg/systemConfig/index', 1, 0, 'C', '0', '0', 'tg:systemConfig:list', 'system', 'admin', sysdate(), '');
 
 INSERT INTO sys_menu (menu_id, menu_name, parent_id, order_num, path, component, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, remark)
 VALUES (2011, '节点信息', 2000, 0, 'node', 'tg/node/index', 1, 0, 'C', '0', '0', 'tg:node:list', 'monitor', 'admin', sysdate(), '集群节点信息');
@@ -81,5 +93,12 @@ INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2103);
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2104);
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2105);
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2011);
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2012);
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2013);
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2014);
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2015);
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2016);
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2017);
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2018);
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2111);
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES (1, 2112);

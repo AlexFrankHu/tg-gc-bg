@@ -22,6 +22,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <where>
             <if test="phone != null and phone != ''">AND phone like concat('%', #{phone}, '%')</if>
             <if test="result != null and result != ''">AND result = #{result}</if>
+            <if test="params.beginLoginTime != null and params.beginLoginTime != ''">AND login_time &gt;= #{params.beginLoginTime}</if>
+            <if test="params.endLoginTime != null and params.endLoginTime != ''">AND login_time &lt;= #{params.endLoginTime}</if>
         </where>
         order by id desc
     </select>

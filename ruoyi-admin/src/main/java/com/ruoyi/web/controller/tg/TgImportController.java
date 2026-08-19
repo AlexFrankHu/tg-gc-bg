@@ -830,6 +830,32 @@ public class TgImportController extends BaseController
     }
 
     /**
+     * 导出登录日志
+     */
+    @PreAuthorize("@ss.hasPermi('tg:import:list')")
+    @PostMapping("/loginLog/export")
+    public void exportLoginLog(jakarta.servlet.http.HttpServletResponse response, TgLoginLog logQuery)
+    {
+        List<TgLoginLog> list = loginLogMapper.selectList(logQuery);
+        List<com.ruoyi.system.domain.vo.TgLoginLogExport> exportList = new ArrayList<>();
+        for (TgLoginLog l : list)
+        {
+            com.ruoyi.system.domain.vo.TgLoginLogExport vo = new com.ruoyi.system.domain.vo.TgLoginLogExport();
+            vo.setId(l.getId());
+            vo.setPhone(l.getPhone());
+            vo.setNickname(l.getNickname());
+            vo.setResult(l.getResult());
+            vo.setReason(l.getReason());
+            vo.setProxyInfo(l.getProxyInfo());
+            vo.setNodeId(l.getNodeId());
+            vo.setLoginTime(l.getLoginTime());
+            exportList.add(vo);
+        }
+        com.ruoyi.common.utils.poi.ExcelUtil<com.ruoyi.system.domain.vo.TgLoginLogExport> util = new com.ruoyi.common.utils.poi.ExcelUtil<>(com.ruoyi.system.domain.vo.TgLoginLogExport.class);
+        util.exportExcel(response, exportList, "登录日志");
+    }
+
+    /**
      * 查询发送失败日志列表
      */
     @PreAuthorize("@ss.hasPermi('tg:import:list')")

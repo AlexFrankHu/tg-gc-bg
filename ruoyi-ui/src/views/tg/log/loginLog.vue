@@ -12,9 +12,22 @@
           <el-option label="登出" value="logout" />
         </el-select>
       </el-form-item>
+      <el-form-item label="登录时间">
+        <el-date-picker
+          v-model="dateRange"
+          style="width: 340px"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          type="datetimerange"
+          range-separator="-"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+          :default-time="[new Date(2000, 1, 1, 0, 0, 0), new Date(2000, 1, 1, 23, 59, 59)]"
+        />
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
         <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+        <el-button type="info" plain icon="Download" @click="handleExport">导出</el-button>
       </el-form-item>
     </el-form>
 
@@ -56,10 +69,13 @@
 <script setup name="LoginLog">
 import { listLoginLog } from "@/api/tg/import";
 
+const { proxy } = getCurrentInstance();
+
 const showSearch = ref(true);
 const logList = ref([]);
 const loading = ref(true);
 const total = ref(0);
+const dateRange = ref([]);
 
 const queryParams = ref({
   pageNum: 1,
@@ -68,9 +84,18 @@ const queryParams = ref({
   result: undefined,
 });
 
+function buildQuery() {
+  const params = { ...queryParams.value };
+  if (dateRange.value && dateRange.value.length === 2) {
+    params['params[beginLoginTime]'] = dateRange.value[0];
+    params['params[endLoginTime]'] = dateRange.value[1];
+  }
+  return params;
+}
+
 function getList() {
   loading.value = true;
-  listLoginLog(queryParams.value).then(response => {
+  listLoginLog(buildQuery()).then(response => {
     logList.value = response.rows;
     total.value = response.total;
     loading.value = false;
@@ -85,7 +110,17 @@ function handleQuery() {
 function resetQuery() {
   queryParams.value.phone = undefined;
   queryParams.value.result = undefined;
+  dateRange.value = [];
   handleQuery();
+}
+
+function handleExport() {
+  proxy.$modal.confirm('是否确认导出所有登录日志数据？').then(() => {
+    const params = buildQuery();
+    delete params.pageNum;
+    delete params.pageSize;
+    proxy.download('tg/import/loginLog/export', params, '登录日志.xlsx');
+  }).catch(() => {});
 }
 
 getList();

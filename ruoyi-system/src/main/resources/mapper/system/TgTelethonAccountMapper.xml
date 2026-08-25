@@ -190,6 +190,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </foreach>
     </update>
 
+    <update id="unrestrictAllAccounts">
+        update tg_telethon_account set is_restricted = 0, update_time = now() where is_restricted = 1
+    </update>
+
     <update id="batchUpdateGroupId">
         update tg_telethon_account set group_id = #{groupId}, update_time = now() where id in
         <foreach item="id" collection="ids" open="(" separator="," close=")">

@@ -589,6 +589,14 @@ public class TgAccountConfigController extends BaseController
     }
 
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")
+    @PutMapping("/restricted/all")
+    public AjaxResult unrestrictAll()
+    {
+        int rows = tgTelethonAccountService.unrestrictAllAccounts();
+        return AjaxResult.success("已解除 " + rows + " 个账号的限制", rows);
+    }
+
+    @PreAuthorize("@ss.hasPermi('tg:account:edit')")
     @PutMapping("/restricted/batch")
     public AjaxResult batchUpdateIsRestricted(@org.springframework.web.bind.annotation.RequestBody java.util.Map<String, Object> params)
     {

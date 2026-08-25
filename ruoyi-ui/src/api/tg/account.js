@@ -167,6 +167,14 @@ export function batchUpdateAccountRestricted(ids, isRestricted) {
   })
 }
 
+// 解除所有被限制账号的限制
+export function unrestrictAllAccounts() {
+  return request({
+    url: '/tg/account/restricted/all',
+    method: 'put'
+  })
+}
+
 // 批量设置账号分组
 export function batchSetAccountGroup(ids, groupId) {
   return request({

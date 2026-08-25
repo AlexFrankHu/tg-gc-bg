@@ -26,6 +26,9 @@ public interface ITgTelethonAccountService
 
     public int batchUpdateIsRestricted(List<Integer> ids, Integer isRestricted);
 
+    /** 解除所有被限制账号的限制 */
+    public int unrestrictAllAccounts();
+
     public int batchUpdateGroupId(List<Integer> ids, Integer groupId);
 
     public int updateAllAutoReply(Boolean autoReply);

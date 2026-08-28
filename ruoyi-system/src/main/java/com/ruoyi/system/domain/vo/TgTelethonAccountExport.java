@@ -46,6 +46,9 @@ public class TgTelethonAccountExport
     @Excel(name = "是否限制")
     private String isRestricted;
 
+    @Excel(name = "是否冻结")
+    private String isFrozen;
+
     @Excel(name = "消息总数")
     private Integer totalMsgCount;
 
@@ -90,6 +93,9 @@ public class TgTelethonAccountExport
     public void setAutoReply(String autoReply) { this.autoReply = autoReply; }
     public String getIsRestricted() { return isRestricted; }
     public void setIsRestricted(String isRestricted) { this.isRestricted = isRestricted; }
+
+    public String getIsFrozen() { return isFrozen; }
+    public void setIsFrozen(String isFrozen) { this.isFrozen = isFrozen; }
     public Integer getTotalMsgCount() { return totalMsgCount; }
     public void setTotalMsgCount(Integer totalMsgCount) { this.totalMsgCount = totalMsgCount; }
     public Integer getSentMsgCount() { return sentMsgCount; }

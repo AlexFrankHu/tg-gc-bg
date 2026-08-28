@@ -95,6 +95,9 @@ public class TgTelethonAccount extends BaseEntity
     /** 是否被限制 0-否 1-是 */
     private Boolean isRestricted;
 
+    /** 是否被TG冻结 0-否 1-是 (冻结账号一定同时被限制) */
+    private Boolean isFrozen;
+
     /** 消息总数 */
     private Integer totalMsgCount;
 
@@ -214,6 +217,9 @@ public class TgTelethonAccount extends BaseEntity
 
     public Boolean getIsRestricted() { return isRestricted; }
     public void setIsRestricted(Boolean isRestricted) { this.isRestricted = isRestricted; }
+
+    public Boolean getIsFrozen() { return isFrozen; }
+    public void setIsFrozen(Boolean isFrozen) { this.isFrozen = isFrozen; }
 
     public Integer getTotalMsgCount() { return totalMsgCount; }
     public void setTotalMsgCount(Integer totalMsgCount) { this.totalMsgCount = totalMsgCount; }

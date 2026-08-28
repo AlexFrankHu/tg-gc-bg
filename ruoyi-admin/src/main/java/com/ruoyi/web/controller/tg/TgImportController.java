@@ -484,16 +484,16 @@ public class TgImportController extends BaseController
         List<TgTelethonAccount> accounts = telethonAccountService.selectTgTelethonAccountList(query);
         accounts.removeIf(a -> (a.getIsDeleted() != null && a.getIsDeleted() == 1) || !"online".equals(a.getStatus()));
 
-        // Filter out restricted accounts — do not assign contacts to them
+        // Filter out restricted or frozen accounts — do not assign contacts to them
         List<String> restrictedPhones = accounts.stream()
-            .filter(a -> a.getIsRestricted() != null && a.getIsRestricted())
+            .filter(TgImportController::isBlocked)
             .map(TgTelethonAccount::getPhone)
             .collect(java.util.stream.Collectors.toList());
-        accounts.removeIf(a -> a.getIsRestricted() != null && a.getIsRestricted());
+        accounts.removeIf(TgImportController::isBlocked);
 
         if (accounts.isEmpty()) {
             if (!restrictedPhones.isEmpty()) {
-                return error("该批次下在线账号均被限制，无法分配好友");
+                return error("该批次下在线账号均被限制或冻结，无法分配好友");
             }
             return error("该批次下没有在线的账号");
         }
@@ -544,16 +544,16 @@ public class TgImportController extends BaseController
         List<TgTelethonAccount> accounts = telethonAccountService.selectTgTelethonAccountList(query);
         accounts.removeIf(a -> (a.getIsDeleted() != null && a.getIsDeleted() == 1) || !"online".equals(a.getStatus()));
 
-        // Filter out restricted accounts — do not assign contacts to them
+        // Filter out restricted or frozen accounts — do not assign contacts to them
         List<String> restrictedPhones = accounts.stream()
-            .filter(a -> a.getIsRestricted() != null && a.getIsRestricted())
+            .filter(TgImportController::isBlocked)
             .map(TgTelethonAccount::getPhone)
             .collect(java.util.stream.Collectors.toList());
-        accounts.removeIf(a -> a.getIsRestricted() != null && a.getIsRestricted());
+        accounts.removeIf(TgImportController::isBlocked);
 
         if (accounts.isEmpty()) {
             if (!restrictedPhones.isEmpty()) {
-                return error("该分组下在线账号均被限制，无法分配好友");
+                return error("该分组下在线账号均被限制或冻结，无法分配好友");
             }
             return error("该分组下没有在线的账号");
         }
@@ -569,6 +569,14 @@ public class TgImportController extends BaseController
 
         return doAssignToAccounts(accounts, contactBatchNo, mode, fixedCount, addMethod, contactType,
             "group", null, null, groupId, groupName);
+    }
+
+    /**
+     * 受限或被 TG 冻结的账号一律不参与任何操作。
+     */
+    private static boolean isBlocked(TgTelethonAccount a)
+    {
+        return Boolean.TRUE.equals(a.getIsRestricted()) || Boolean.TRUE.equals(a.getIsFrozen());
     }
 
     /**

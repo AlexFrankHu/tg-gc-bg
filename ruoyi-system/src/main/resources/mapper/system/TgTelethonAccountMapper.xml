@@ -32,6 +32,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="proxyPassword"   column="proxy_password"   />
         <result property="autoReply"       column="auto_reply"       />
         <result property="isRestricted"   column="is_restricted"    />
+        <result property="isFrozen"       column="is_frozen"        />
         <result property="totalMsgCount"  column="total_msg_count"  />
         <result property="sentMsgCount"   column="sent_msg_count"   />
         <result property="recvMsgCount"   column="recv_msg_count"   />
@@ -47,7 +48,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectTgTelethonAccountVo">
-        select a.id, a.phone, a.api_id, a.api_hash, a.tg_user_id, a.nickname, a.username, a.country, a.device_model, a.system_version, a.app_version, a.lang_code, a.system_lang_code, a.batch_no, a.group_id, a.status, a.proxy_ip_id, a.proxy_group_no, a.proxy_url, a.proxy_protocol, a.proxy_host, a.proxy_port, a.proxy_username, a.proxy_password, a.auto_reply, a.is_restricted, a.total_msg_count, a.sent_msg_count, a.recv_msg_count, a.node_id, a.json_content, a.last_login_time, a.create_time, a.update_time,
+        select a.id, a.phone, a.api_id, a.api_hash, a.tg_user_id, a.nickname, a.username, a.country, a.device_model, a.system_version, a.app_version, a.lang_code, a.system_lang_code, a.batch_no, a.group_id, a.status, a.proxy_ip_id, a.proxy_group_no, a.proxy_url, a.proxy_protocol, a.proxy_host, a.proxy_port, a.proxy_username, a.proxy_password, a.auto_reply, a.is_restricted, a.is_frozen, a.total_msg_count, a.sent_msg_count, a.recv_msg_count, a.node_id, a.json_content, a.last_login_time, a.create_time, a.update_time,
         b.title as batchTitle,
         pg.group_name as proxyGroupTitle,
         ag.group_name as groupName
@@ -95,6 +96,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             </if>
             <if test="isRestricted != null">
                 AND a.is_restricted = #{isRestricted}
+            </if>
+            <if test="isFrozen != null">
+                AND a.is_frozen = #{isFrozen}
             </if>
         </where>
         order by a.id desc
@@ -179,8 +183,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         update tg_telethon_account set auto_reply = #{autoReply}, update_time = now() where id = #{id}
     </update>
 
+    <!-- 冻结账号一定是受限账号: 解除限制(is_restricted=0)时跳过已冻结账号 -->
     <update id="updateIsRestrictedById">
-        update tg_telethon_account set is_restricted = #{isRestricted}, update_time = now() where id = #{id}
+        update tg_telethon_account set is_restricted = #{isRestricted}, update_time = now()
+        where id = #{id}
+        <if test="isRestricted == 0">
+            AND (is_frozen = 0 OR is_frozen IS NULL)
+        </if>
     </update>
 
     <update id="batchUpdateIsRestricted">
@@ -188,10 +197,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <foreach item="id" collection="ids" open="(" separator="," close=")">
             #{id}
         </foreach>
+        <if test="isRestricted == 0">
+            AND (is_frozen = 0 OR is_frozen IS NULL)
+        </if>
     </update>
 
     <update id="unrestrictAllAccounts">
-        update tg_telethon_account set is_restricted = 0, update_time = now() where is_restricted = 1
+        update tg_telethon_account set is_restricted = 0, update_time = now()
+        where is_restricted = 1 AND (is_frozen = 0 OR is_frozen IS NULL)
     </update>
 
     <update id="batchUpdateGroupId">

@@ -41,6 +41,9 @@ public class TgAccountConfigController extends BaseController
 {
     private static final Logger log = LoggerFactory.getLogger(TgAccountConfigController.class);
 
+    // 冻结账号必须保持受限状态，因此解除限制对已冻结账号无效
+    private static final String FROZEN_KEEP_RESTRICTED_TIP = "账号已被TG冻结，冻结账号必须保持受限，无法解除限制";
+
     // Serialize batch proxy assignment per IP-group to avoid concurrent/duplicate
     // requests (front-end retries on timeout) double-assigning IPs and clobbering
     // the non-atomic bind counters.
@@ -101,6 +104,7 @@ public class TgAccountConfigController extends BaseController
             vo.setProxyGroupTitle(a.getProxyGroupTitle());
             vo.setAutoReply(Boolean.TRUE.equals(a.getAutoReply()) ? "开" : "关");
             vo.setIsRestricted(Boolean.TRUE.equals(a.getIsRestricted()) ? "是" : "否");
+            vo.setIsFrozen(Boolean.TRUE.equals(a.getIsFrozen()) ? "是" : "否");
             vo.setTotalMsgCount(a.getTotalMsgCount());
             vo.setSentMsgCount(a.getSentMsgCount());
             vo.setRecvMsgCount(a.getRecvMsgCount());
@@ -585,7 +589,12 @@ public class TgAccountConfigController extends BaseController
     @PutMapping("/restricted/{id}/{isRestricted}")
     public AjaxResult updateIsRestricted(@PathVariable("id") Integer id, @PathVariable("isRestricted") Integer isRestricted)
     {
-        return toAjax(tgTelethonAccountService.updateIsRestrictedById(id, isRestricted));
+        int rows = tgTelethonAccountService.updateIsRestrictedById(id, isRestricted);
+        if (rows == 0 && isRestricted != null && isRestricted == 0)
+        {
+            return error(FROZEN_KEEP_RESTRICTED_TIP);
+        }
+        return toAjax(rows);
     }
 
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")
@@ -593,7 +602,7 @@ public class TgAccountConfigController extends BaseController
     public AjaxResult unrestrictAll()
     {
         int rows = tgTelethonAccountService.unrestrictAllAccounts();
-        return AjaxResult.success("已解除 " + rows + " 个账号的限制", rows);
+        return AjaxResult.success("已解除 " + rows + " 个账号的限制(已冻结账号不解除)", rows);
     }
 
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")
@@ -604,7 +613,17 @@ public class TgAccountConfigController extends BaseController
         List<Integer> ids = (List<Integer>) params.get("ids");
         Integer isRestricted = (Integer) params.get("isRestricted");
         if (ids == null || ids.isEmpty()) return error("请选择账号");
-        return toAjax(tgTelethonAccountService.batchUpdateIsRestricted(ids, isRestricted));
+        int rows = tgTelethonAccountService.batchUpdateIsRestricted(ids, isRestricted);
+        if (isRestricted != null && isRestricted == 0)
+        {
+            if (rows == 0) return error(FROZEN_KEEP_RESTRICTED_TIP);
+            if (rows < ids.size())
+            {
+                return AjaxResult.success("已解除 " + rows + " 个账号的限制, " + (ids.size() - rows)
+                    + " 个账号已被TG冻结不能解除", rows);
+            }
+        }
+        return toAjax(rows);
     }
 
     /**

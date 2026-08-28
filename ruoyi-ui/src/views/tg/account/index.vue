@@ -46,6 +46,12 @@
           <el-option label="否" :value="0" />
         </el-select>
       </el-form-item>
+      <el-form-item label="是否冻结" prop="isFrozen">
+        <el-select v-model="queryParams.isFrozen" placeholder="请选择" clearable style="width: 120px">
+          <el-option label="是" :value="1" />
+          <el-option label="否" :value="0" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="节点ID" prop="nodeId">
         <el-input
           v-model="queryParams.nodeId"
@@ -144,6 +150,12 @@
       <el-table-column label="限制" align="center" width="60">
         <template #default="scope">
           <el-tag v-if="scope.row.isRestricted" type="danger" size="small" style="cursor:pointer" @click="handleToggleRestricted(scope.row)">是</el-tag>
+          <span v-else>-</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="冻结" align="center" width="60">
+        <template #default="scope">
+          <el-tag v-if="scope.row.isFrozen" type="danger" size="small">是</el-tag>
           <span v-else>-</span>
         </template>
       </el-table-column>
@@ -438,6 +450,7 @@ const data = reactive({
     batchNo: undefined,
     status: undefined,
     isRestricted: undefined,
+    isFrozen: undefined,
     nodeId: undefined,
     groupId: undefined,
   },
@@ -764,16 +777,16 @@ function submitSetGroup() {
 }
 
 function handleBatchUnrestrict() {
-  proxy.$modal.confirm('确认要解除选中的 ' + ids.value.length + ' 个账号的限制状态吗？').then(() => {
-    batchUpdateAccountRestricted(ids.value, 0).then(() => {
-      proxy.$modal.msgSuccess('已解除限制');
+  proxy.$modal.confirm('确认要解除选中的 ' + ids.value.length + ' 个账号的限制状态吗？(已被TG冻结的账号不会解除)').then(() => {
+    batchUpdateAccountRestricted(ids.value, 0).then(res => {
+      proxy.$modal.msgSuccess(res.msg || '已解除限制');
       getList();
     });
   }).catch(() => {});
 }
 
 function handleUnrestrictAll() {
-  proxy.$modal.confirm('确认要解除所有被限制账号的限制状态吗？').then(() => {
+  proxy.$modal.confirm('确认要解除所有被限制账号的限制状态吗？(已被TG冻结的账号不会解除)').then(() => {
     return unrestrictAllAccounts();
   }).then(res => {
     proxy.$modal.msgSuccess(res.msg || '已解除限制');
@@ -782,6 +795,10 @@ function handleUnrestrictAll() {
 }
 
 function handleToggleRestricted(row) {
+  if (row.isFrozen) {
+    proxy.$modal.msgWarning('账号已被TG冻结，冻结账号必须保持受限，无法解除限制');
+    return;
+  }
   proxy.$modal.confirm('确认要解除账号 ' + row.phone + ' 的限制状态吗？').then(() => {
     updateAccountRestricted(row.id, 0).then(() => {
       proxy.$modal.msgSuccess('已解除限制');

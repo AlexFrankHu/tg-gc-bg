@@ -90,6 +90,14 @@ export function logoutBatch(batchNo) {
   })
 }
 
+// 账号分组登出（按账号分组）
+export function logoutByGroup(groupId) {
+  return request({
+    url: '/tg/account/logoutByGroup/' + groupId,
+    method: 'put'
+  })
+}
+
 // 查看账号代理信息
 export function getProxyInfo(id) {
   return request({

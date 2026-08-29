@@ -294,6 +294,27 @@ public class TgAccountConfigController extends BaseController
     }
 
     /**
+     * 账号分组登出 - 按账号分组将在线账号设置为 waitLogout(等待登出)，节点定时器轮询到后真正登出并释放资源
+     */
+    @PreAuthorize("@ss.hasPermi('tg:account:edit')")
+    @PutMapping("/logoutByGroup/{groupId}")
+    public AjaxResult logoutByGroup(@PathVariable("groupId") Integer groupId)
+    {
+        TgTelethonAccount query = new TgTelethonAccount();
+        query.setGroupId(groupId);
+        query.setStatus("online");
+        List<TgTelethonAccount> accounts = tgTelethonAccountService.selectTgTelethonAccountList(query);
+
+        int setCount = 0;
+        for (TgTelethonAccount acc : accounts)
+        {
+            tgTelethonAccountService.updateStatusById(acc.getId(), "waitLogout");
+            setCount++;
+        }
+        return success("设置成功，共设置 " + setCount + " 个账号");
+    }
+
+    /**
      * 获取网页端 WebSocket token
      */
     @PreAuthorize("@ss.hasPermi('tg:account:query')")

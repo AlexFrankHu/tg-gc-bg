@@ -84,6 +84,9 @@
         <el-button type="warning" icon="SwitchButton" @click="showBatchLogoutDialog" v-hasPermi="['tg:account:edit']">批量登出</el-button>
       </el-col>
       <el-col :span="1.5">
+        <el-button type="warning" plain icon="SwitchButton" @click="showGroupLogoutDialog" v-hasPermi="['tg:account:edit']">账号分组登出</el-button>
+      </el-col>
+      <el-col :span="1.5">
         <el-button type="success" plain @click="handleAllAccountAutoReply(true)" v-hasPermi="['tg:account:edit']">全部开启自动回复</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -277,6 +280,26 @@
       </template>
     </el-dialog>
 
+    <!-- 账号分组登出对话框 -->
+    <el-dialog v-model="groupLogoutVisible" title="账号分组登出" width="450px" append-to-body>
+      <el-form label-width="80px">
+        <el-form-item label="选择分组">
+          <el-select v-model="selectedLogoutGroupId" placeholder="请选择要登出的账号分组" style="width: 100%">
+            <el-option
+              v-for="g in groupLogoutOptions"
+              :key="'go_' + g.id"
+              :label="g.groupName"
+              :value="g.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="groupLogoutVisible = false">取消</el-button>
+        <el-button type="warning" :loading="groupLogoutLoading" @click="submitGroupLogout" :disabled="selectedLogoutGroupId == null">确认登出</el-button>
+      </template>
+    </el-dialog>
+
     <!-- 查看代理IP对话框 -->
     <el-dialog v-model="viewProxyVisible" title="查看代理IP" width="500px" append-to-body>
       <el-descriptions :column="1" border>
@@ -390,7 +413,7 @@
 </template>
 
 <script setup name="Account">
-import { listAccount, getAccount, delAccount, triggerLogin, loginNoProxy, logoutAccount, getWsToken, loginBatch, loginByGroup, logoutBatch, getProxyInfo, autoSelectProxy, manualSelectProxy, configProxy, updateAccountAutoReply, updateAllAccountAutoReply, updateAccountRestricted, batchUpdateAccountRestricted, unrestrictAllAccounts, batchSetAccountGroup } from "@/api/tg/account";
+import { listAccount, getAccount, delAccount, triggerLogin, loginNoProxy, logoutAccount, getWsToken, loginBatch, loginByGroup, logoutBatch, logoutByGroup, getProxyInfo, autoSelectProxy, manualSelectProxy, configProxy, updateAccountAutoReply, updateAllAccountAutoReply, updateAccountRestricted, batchUpdateAccountRestricted, unrestrictAllAccounts, batchSetAccountGroup } from "@/api/tg/account";
 import { listAllBatch } from "@/api/tg/import";
 import { listEnabledAccountGroup } from "@/api/tg/accountGroup";
 import { listAllProxyGroup, listProxyIp } from "@/api/tg/proxy";
@@ -419,6 +442,11 @@ const groupLoginOptions = ref([]);
 const batchLogoutVisible = ref(false);
 const batchLogoutLoading = ref(false);
 const selectedLogoutBatchNo = ref("");
+
+const groupLogoutVisible = ref(false);
+const groupLogoutLoading = ref(false);
+const selectedLogoutGroupId = ref(null);
+const groupLogoutOptions = ref([]);
 
 // Proxy dialogs
 const currentProxyAccountId = ref(null);
@@ -627,6 +655,30 @@ function submitBatchLogout() {
     proxy.$modal.msgError("批量登出失败: " + (err.message || err));
   }).finally(() => {
     batchLogoutLoading.value = false;
+  });
+}
+
+function showGroupLogoutDialog() {
+  selectedLogoutGroupId.value = null;
+  groupLogoutVisible.value = true;
+  listEnabledAccountGroup().then(res => {
+    if (res.code === 200) {
+      groupLogoutOptions.value = res.data || [];
+    }
+  });
+}
+
+function submitGroupLogout() {
+  if (selectedLogoutGroupId.value == null) return;
+  groupLogoutLoading.value = true;
+  logoutByGroup(selectedLogoutGroupId.value).then(res => {
+    proxy.$modal.msgSuccess("账号分组登出请求已发送，请稍候刷新查看结果");
+    groupLogoutVisible.value = false;
+    setTimeout(() => { getList(); }, 3000);
+  }).catch(err => {
+    proxy.$modal.msgError("账号分组登出失败: " + (err.message || err));
+  }).finally(() => {
+    groupLogoutLoading.value = false;
   });
 }
 

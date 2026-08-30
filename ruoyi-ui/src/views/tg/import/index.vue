@@ -47,6 +47,18 @@
           <span v-else>0</span>
         </template>
       </el-table-column>
+      <el-table-column label="限制数" align="center" prop="restrictedCount" width="100">
+        <template #default="scope">
+          <el-tag type="warning" v-if="scope.row.restrictedCount > 0">{{ scope.row.restrictedCount }}</el-tag>
+          <span v-else>0</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="冻结数" align="center" prop="frozenCount" width="100">
+        <template #default="scope">
+          <el-tag type="danger" v-if="scope.row.frozenCount > 0">{{ scope.row.frozenCount }}</el-tag>
+          <span v-else>0</span>
+        </template>
+      </el-table-column>
       <el-table-column label="导入时间" align="center" prop="importTime" width="180" />
       <el-table-column label="操作" align="center" width="200">
         <template #default="scope">

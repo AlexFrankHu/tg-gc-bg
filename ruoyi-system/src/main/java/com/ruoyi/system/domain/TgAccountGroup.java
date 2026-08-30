@@ -23,6 +23,15 @@ public class TgAccountGroup extends BaseEntity
     /** 该分组下账号数量(关联统计) */
     private Integer accountCount;
 
+    /** 该分组下在线账号数(关联统计) */
+    private Integer onlineCount;
+
+    /** 该分组下受限账号数(关联统计, 不区分是否冻结) */
+    private Integer restrictedCount;
+
+    /** 该分组下冻结账号数(关联统计) */
+    private Integer frozenCount;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
@@ -37,6 +46,12 @@ public class TgAccountGroup extends BaseEntity
     public void setEnabled(Integer enabled) { this.enabled = enabled; }
     public Integer getAccountCount() { return accountCount; }
     public void setAccountCount(Integer accountCount) { this.accountCount = accountCount; }
+    public Integer getOnlineCount() { return onlineCount; }
+    public void setOnlineCount(Integer onlineCount) { this.onlineCount = onlineCount; }
+    public Integer getRestrictedCount() { return restrictedCount; }
+    public void setRestrictedCount(Integer restrictedCount) { this.restrictedCount = restrictedCount; }
+    public Integer getFrozenCount() { return frozenCount; }
+    public void setFrozenCount(Integer frozenCount) { this.frozenCount = frozenCount; }
     @Override
     public Date getCreateTime() { return createTime; }
     @Override

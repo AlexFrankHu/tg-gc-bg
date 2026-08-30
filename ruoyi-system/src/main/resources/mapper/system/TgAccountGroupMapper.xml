@@ -9,13 +9,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="groupName"    column="group_name"   />
         <result property="enabled"      column="enabled"      />
         <result property="accountCount" column="account_count"/>
+        <result property="onlineCount"     column="online_count"     />
+        <result property="restrictedCount" column="restricted_count" />
+        <result property="frozenCount"     column="frozen_count"     />
         <result property="createTime"   column="create_time"  />
         <result property="updateTime"   column="update_time"  />
     </resultMap>
 
     <select id="selectTgAccountGroupList" parameterType="TgAccountGroup" resultMap="TgAccountGroupResult">
         select g.id, g.group_name, g.enabled, g.create_time, g.update_time,
-               (select count(*) from tg_telethon_account a where a.group_id = g.id and (a.is_deleted = 0 or a.is_deleted is null)) as account_count
+               (select count(*) from tg_telethon_account a where a.group_id = g.id and (a.is_deleted = 0 or a.is_deleted is null)) as account_count,
+               (select count(*) from tg_telethon_account a where a.group_id = g.id and (a.is_deleted = 0 or a.is_deleted is null) and a.status = 'online') as online_count,
+               (select count(*) from tg_telethon_account a where a.group_id = g.id and (a.is_deleted = 0 or a.is_deleted is null) and a.is_restricted = 1) as restricted_count,
+               (select count(*) from tg_telethon_account a where a.group_id = g.id and (a.is_deleted = 0 or a.is_deleted is null) and a.is_frozen = 1) as frozen_count
         from tg_account_group g
         <where>
             <if test="groupName != null and groupName != ''">

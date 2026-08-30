@@ -13,6 +13,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="successCount"    column="success_count"    />
         <result property="failedCount"     column="failed_count"     />
         <result property="waitingCount"    column="waiting_count"    />
+        <result property="restrictedCount" column="restricted_count" />
+        <result property="frozenCount"     column="frozen_count"     />
         <result property="importTime"      column="import_time"      />
         <result property="createTime"      column="create_time"      />
         <result property="updateTime"      column="update_time"      />
@@ -34,16 +36,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
     <select id="selectTgImportBatchList" parameterType="TgImportBatch" resultMap="TgImportBatchResult">
-        <include refid="selectTgImportBatchVo"/>
+        select b.id, b.batch_no, b.title, b.file_name, b.total_count, b.success_count, b.failed_count, b.waiting_count,
+               b.import_time, b.create_time, b.update_time,
+               (select count(*) from tg_telethon_account a where a.batch_no = b.batch_no
+                  and (a.is_deleted = 0 or a.is_deleted is null) and a.is_restricted = 1) as restricted_count,
+               (select count(*) from tg_telethon_account a where a.batch_no = b.batch_no
+                  and (a.is_deleted = 0 or a.is_deleted is null) and a.is_frozen = 1) as frozen_count
+        from tg_import_batch b
         <where>
             <if test="batchNo != null and batchNo != ''">
-                AND batch_no = #{batchNo}
+                AND b.batch_no = #{batchNo}
             </if>
             <if test="fileName != null and fileName != ''">
-                AND file_name like concat('%', #{fileName}, '%')
+                AND b.file_name like concat('%', #{fileName}, '%')
             </if>
         </where>
-        order by id desc
+        order by b.id desc
     </select>
 
     <insert id="insertTgImportBatch" parameterType="TgImportBatch" useGeneratedKeys="true" keyProperty="id">

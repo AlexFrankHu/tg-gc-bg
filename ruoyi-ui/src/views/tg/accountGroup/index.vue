@@ -26,6 +26,24 @@
       <el-table-column label="组ID" align="center" prop="id" width="90" />
       <el-table-column label="组名称" align="center" prop="groupName" :show-overflow-tooltip="true" />
       <el-table-column label="账号数" align="center" prop="accountCount" width="100" />
+      <el-table-column label="在线数" align="center" prop="onlineCount" width="100">
+        <template #default="scope">
+          <el-tag type="success" v-if="scope.row.onlineCount > 0">{{ scope.row.onlineCount }}</el-tag>
+          <span v-else>0</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="限制数" align="center" prop="restrictedCount" width="100">
+        <template #default="scope">
+          <el-tag type="warning" v-if="scope.row.restrictedCount > 0">{{ scope.row.restrictedCount }}</el-tag>
+          <span v-else>0</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="冻结数" align="center" prop="frozenCount" width="100">
+        <template #default="scope">
+          <el-tag type="danger" v-if="scope.row.frozenCount > 0">{{ scope.row.frozenCount }}</el-tag>
+          <span v-else>0</span>
+        </template>
+      </el-table-column>
       <el-table-column label="是否可用" align="center" prop="enabled" width="110">
         <template #default="scope">
           <el-tag v-if="scope.row.enabled === 1" type="success">可用</el-tag>

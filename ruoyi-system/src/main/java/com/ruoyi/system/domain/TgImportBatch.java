@@ -35,6 +35,12 @@ public class TgImportBatch extends BaseEntity
     /** 等待登录数 */
     private Integer waitingCount;
 
+    /** 受限账号数(关联统计, 不区分是否冻结) */
+    private Integer restrictedCount;
+
+    /** 冻结账号数(关联统计) */
+    private Integer frozenCount;
+
     /** 导入时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date importTime;
@@ -70,6 +76,12 @@ public class TgImportBatch extends BaseEntity
 
     public Integer getWaitingCount() { return waitingCount; }
     public void setWaitingCount(Integer waitingCount) { this.waitingCount = waitingCount; }
+
+    public Integer getRestrictedCount() { return restrictedCount; }
+    public void setRestrictedCount(Integer restrictedCount) { this.restrictedCount = restrictedCount; }
+
+    public Integer getFrozenCount() { return frozenCount; }
+    public void setFrozenCount(Integer frozenCount) { this.frozenCount = frozenCount; }
 
     public Date getImportTime() { return importTime; }
     public void setImportTime(Date importTime) { this.importTime = importTime; }

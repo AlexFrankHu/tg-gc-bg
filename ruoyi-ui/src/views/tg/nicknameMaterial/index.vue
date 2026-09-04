@@ -61,7 +61,7 @@ const ids = ref([])
 const multiple = ref(true)
 const importVisible = ref(false)
 const importLoading = ref(false)
-let importFile = null
+const importFile = ref(null)
 
 const queryParams = ref({ pageNum: 1, pageSize: 20, nickname: undefined })
 
@@ -81,15 +81,15 @@ function handleSelectionChange(selection) {
 }
 
 function showImportDialog() {
-  importFile = null
+  importFile.value = null
   importVisible.value = true
 }
-function handleFileChange(file) { importFile = file.raw }
+function handleFileChange(file) { importFile.value = file.raw }
 function submitImport() {
-  if (!importFile) return
+  if (!importFile.value) return
   importLoading.value = true
   const formData = new FormData()
-  formData.append('file', importFile)
+  formData.append('file', importFile.value)
   importNicknameMaterial(formData).then(res => {
     proxy.$modal.msgSuccess(res.msg || '导入成功')
     importVisible.value = false

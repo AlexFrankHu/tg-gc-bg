@@ -87,6 +87,15 @@
         <el-button type="warning" plain icon="SwitchButton" @click="showGroupLogoutDialog" v-hasPermi="['tg:account:edit']">账号分组登出</el-button>
       </el-col>
       <el-col :span="1.5">
+        <el-button type="primary" plain icon="Edit" @click="showBatchTaskDialog('nickname')" v-hasPermi="['tg:account:edit']">按批次修改昵称</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button type="primary" plain icon="Picture" @click="showBatchTaskDialog('avatar')" v-hasPermi="['tg:account:edit']">按批次修改头像</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button type="primary" plain icon="Lock" @click="showBatchTaskDialog('twofa')" v-hasPermi="['tg:account:edit']">按批次修改2FA密码</el-button>
+      </el-col>
+      <el-col :span="1.5">
         <el-button type="success" plain @click="handleAllAccountAutoReply(true)" v-hasPermi="['tg:account:edit']">全部开启自动回复</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -115,6 +124,11 @@
       <el-table-column label="ID" align="center" prop="id" width="82" fixed="left" />
       <el-table-column label="手机号" align="center" prop="phone" width="120" fixed="left" show-overflow-tooltip />
       <el-table-column label="昵称" align="center" prop="nickname" width="100" show-overflow-tooltip />
+      <el-table-column label="2FA密码" align="center" prop="twofaPassword" width="100" show-overflow-tooltip>
+        <template #default="scope">
+          <span>{{ scope.row.twofaPassword || '-' }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="用户名" align="center" prop="username" width="100" show-overflow-tooltip>
         <template #default="scope">
           <span v-if="scope.row.username">@{{ scope.row.username }}</span>
@@ -201,7 +215,10 @@
             <el-button link type="primary" size="small">更多<el-icon class="el-icon--right"><arrow-down /></el-icon></el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="exportChat">导出聊天记录</el-dropdown-item>
+                <el-dropdown-item command="taskNickname" v-if="scope.row.status === 'online'">修改昵称</el-dropdown-item>
+                <el-dropdown-item command="taskAvatar" v-if="scope.row.status === 'online'">修改头像</el-dropdown-item>
+                <el-dropdown-item command="taskTwofa" v-if="scope.row.status === 'online'">修改2FA密码</el-dropdown-item>
+                <el-dropdown-item command="exportChat" divided>导出聊天记录</el-dropdown-item>
                 <el-dropdown-item command="delete" v-if="scope.row.status !== 'online'">删除</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -277,6 +294,27 @@
       <template #footer>
         <el-button @click="batchLogoutVisible = false">取消</el-button>
         <el-button type="warning" :loading="batchLogoutLoading" @click="submitBatchLogout" :disabled="!selectedLogoutBatchNo">确认登出</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 按批次修改昵称/头像/2FA 对话框 -->
+    <el-dialog v-model="batchTaskVisible" :title="'按批次' + taskTypeText(batchTaskType)" width="480px" append-to-body>
+      <el-form label-width="80px">
+        <el-form-item label="选择批次">
+          <el-select v-model="batchTaskBatchNo" placeholder="请选择批次" filterable style="width: 100%">
+            <el-option
+              v-for="batch in batchOptions"
+              :key="'bt_' + batch.batchNo"
+              :label="batch.title || batch.batchNo"
+              :value="batch.batchNo"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <el-alert type="info" :closable="false" show-icon :title="taskTypeTip(batchTaskType)" />
+      <template #footer>
+        <el-button @click="batchTaskVisible = false">取消</el-button>
+        <el-button type="primary" :loading="batchTaskLoading" @click="submitBatchTask" :disabled="!batchTaskBatchNo">确认下发</el-button>
       </template>
     </el-dialog>
 
@@ -413,7 +451,7 @@
 </template>
 
 <script setup name="Account">
-import { listAccount, getAccount, delAccount, triggerLogin, loginNoProxy, logoutAccount, getWsToken, loginBatch, loginByGroup, logoutBatch, logoutByGroup, getProxyInfo, autoSelectProxy, manualSelectProxy, configProxy, updateAccountAutoReply, updateAllAccountAutoReply, updateAccountRestricted, batchUpdateAccountRestricted, unrestrictAllAccounts, batchSetAccountGroup } from "@/api/tg/account";
+import { listAccount, getAccount, delAccount, triggerLogin, loginNoProxy, logoutAccount, getWsToken, loginBatch, loginByGroup, logoutBatch, logoutByGroup, getProxyInfo, autoSelectProxy, manualSelectProxy, configProxy, updateAccountAutoReply, updateAllAccountAutoReply, updateAccountRestricted, batchUpdateAccountRestricted, unrestrictAllAccounts, batchSetAccountGroup, createAccountTask, createAccountTaskByBatch } from "@/api/tg/account";
 import { listAllBatch } from "@/api/tg/import";
 import { listEnabledAccountGroup } from "@/api/tg/accountGroup";
 import { listAllProxyGroup, listProxyIp } from "@/api/tg/proxy";
@@ -447,6 +485,11 @@ const groupLogoutVisible = ref(false);
 const groupLogoutLoading = ref(false);
 const selectedLogoutGroupId = ref(null);
 const groupLogoutOptions = ref([]);
+
+const batchTaskVisible = ref(false);
+const batchTaskLoading = ref(false);
+const batchTaskType = ref("nickname");
+const batchTaskBatchNo = ref("");
 
 // Proxy dialogs
 const currentProxyAccountId = ref(null);
@@ -656,6 +699,46 @@ function submitBatchLogout() {
   }).finally(() => {
     batchLogoutLoading.value = false;
   });
+}
+
+function taskTypeText(t) {
+  return { nickname: '修改昵称', avatar: '修改头像', twofa: '修改2FA密码' }[t] || t;
+}
+
+function taskTypeTip(t) {
+  if (t === 'nickname') return '昵称从「昵称素材库」随机获取；仅对在线且未受限/未冻结的账号下发，由节点异步执行，结果见「账号任务」页。';
+  if (t === 'avatar') return '头像从「头像素材库」随机获取；仅对在线且未受限/未冻结的账号下发，由节点异步执行，结果见「账号任务」页。';
+  return '新密码为随机 8 位数字；旧密码优先取账号表 2FA 密码字段，其次取导入 json，均无则跳过该账号；成功后自动更新表中 2FA 密码，失败不影响其他账号。';
+}
+
+function showBatchTaskDialog(type) {
+  batchTaskType.value = type;
+  batchTaskBatchNo.value = "";
+  batchTaskVisible.value = true;
+  listAllBatch().then(res => {
+    if (res.code === 200) {
+      batchOptions.value = res.data || [];
+    }
+  });
+}
+
+function submitBatchTask() {
+  if (!batchTaskBatchNo.value) return;
+  batchTaskLoading.value = true;
+  createAccountTaskByBatch(batchTaskType.value, batchTaskBatchNo.value).then(res => {
+    proxy.$modal.msgSuccess(res.msg || "任务已下发");
+    batchTaskVisible.value = false;
+  }).catch(err => {
+    proxy.$modal.msgError("下发失败: " + (err.message || err));
+  }).finally(() => {
+    batchTaskLoading.value = false;
+  });
+}
+
+function handleSingleTask(type, row) {
+  proxy.$modal.confirm(`是否对账号 ${row.phone} 执行「${taskTypeText(type)}」？`).then(() => createAccountTask(type, row.id)).then(res => {
+    proxy.$modal.msgSuccess(res.msg || "任务已下发");
+  }).catch(() => {});
 }
 
 function showGroupLogoutDialog() {
@@ -881,7 +964,13 @@ function handleAllAccountAutoReply(autoReply) {
 }
 
 function handleMoreCommand(cmd, row) {
-  if (cmd === 'exportChat') {
+  if (cmd === 'taskNickname') {
+    handleSingleTask('nickname', row);
+  } else if (cmd === 'taskAvatar') {
+    handleSingleTask('avatar', row);
+  } else if (cmd === 'taskTwofa') {
+    handleSingleTask('twofa', row);
+  } else if (cmd === 'exportChat') {
     handleExportChat(row);
   } else if (cmd === 'delete') {
     handleDelete(row);

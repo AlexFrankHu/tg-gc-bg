@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgNicknameMaterialMapper">
+
+    <resultMap type="TgNicknameMaterial" id="TgNicknameMaterialResult">
+        <result property="id"         column="id"          />
+        <result property="nickname"   column="nickname"    />
+        <result property="createTime" column="create_time" />
+    </resultMap>
+
+    <select id="selectList" parameterType="TgNicknameMaterial" resultMap="TgNicknameMaterialResult">
+        select id, nickname, create_time from tg_nickname_material
+        <where>
+            <if test="nickname != null and nickname != ''">
+                AND nickname like concat('%', #{nickname}, '%')
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectAllNicknames" resultType="String">
+        select nickname from tg_nickname_material
+    </select>
+
+    <insert id="batchInsert" parameterType="String">
+        insert into tg_nickname_material (nickname, create_time) values
+        <foreach item="n" collection="list" separator=",">
+            (#{n}, now())
+        </foreach>
+    </insert>
+
+    <delete id="deleteByIds" parameterType="Integer">
+        delete from tg_nickname_material where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteAll">
+        delete from tg_nickname_material
+    </delete>
+
+</mapper>

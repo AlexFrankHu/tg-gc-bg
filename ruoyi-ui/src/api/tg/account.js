@@ -191,3 +191,29 @@ export function batchSetAccountGroup(ids, groupId) {
     data: { ids, groupId }
   })
 }
+
+// 单个账号任务: 修改昵称/头像/2FA (taskType: nickname/avatar/twofa)
+export function createAccountTask(taskType, id) {
+  return request({
+    url: '/tg/account/task/' + taskType + '/' + id,
+    method: 'put'
+  })
+}
+
+// 按批次下发账号任务
+export function createAccountTaskByBatch(taskType, batchNo) {
+  return request({
+    url: '/tg/account/taskBatch/' + taskType + '/' + batchNo,
+    method: 'put',
+    timeout: 120000
+  })
+}
+
+// 按账号分组下发账号任务
+export function createAccountTaskByGroup(taskType, groupId) {
+  return request({
+    url: '/tg/account/taskByGroup/' + taskType + '/' + groupId,
+    method: 'put',
+    timeout: 120000
+  })
+}

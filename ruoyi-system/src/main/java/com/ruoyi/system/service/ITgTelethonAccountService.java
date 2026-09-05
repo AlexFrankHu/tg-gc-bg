@@ -29,6 +29,9 @@ public interface ITgTelethonAccountService
     /** 解除所有被限制账号的限制 */
     public int unrestrictAllAccounts();
 
+    /** 解除指定分组下所有账号的冻结(同时解除限制) */
+    public int unfreezeByGroupId(Integer groupId);
+
     public int batchUpdateGroupId(List<Integer> ids, Integer groupId);
 
     public int updateAllAutoReply(Boolean autoReply);

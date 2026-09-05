@@ -299,6 +299,17 @@ public class TgAccountConfigController extends BaseController
     }
 
     /**
+     * 按账号分组解除冻结 - 将该分组下所有已冻结账号的 is_frozen/is_restricted 置 0
+     */
+    @PreAuthorize("@ss.hasPermi('tg:account:edit')")
+    @PutMapping("/unfreezeByGroup/{groupId}")
+    public AjaxResult unfreezeByGroup(@PathVariable("groupId") Integer groupId)
+    {
+        int rows = tgTelethonAccountService.unfreezeByGroupId(groupId);
+        return AjaxResult.success("已解除 " + rows + " 个账号的冻结", rows);
+    }
+
+    /**
      * 账号分组登出 - 按账号分组将在线账号设置为 waitLogout(等待登出)，节点定时器轮询到后真正登出并释放资源
      */
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")

@@ -208,6 +208,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where is_restricted = 1 AND (is_frozen = 0 OR is_frozen IS NULL)
     </update>
 
+    <update id="unfreezeByGroupId">
+        update tg_telethon_account set is_frozen = 0, is_restricted = 0, update_time = now()
+        where group_id = #{groupId} AND is_frozen = 1 AND (is_deleted = 0 OR is_deleted IS NULL)
+    </update>
+
     <update id="batchUpdateGroupId">
         update tg_telethon_account set group_id = #{groupId}, update_time = now() where id in
         <foreach item="id" collection="ids" open="(" separator="," close=")">

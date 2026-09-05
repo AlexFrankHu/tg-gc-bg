@@ -31,6 +31,8 @@ public interface TgTelethonAccountMapper
 
     public int unrestrictAllAccounts();
 
+    public int unfreezeByGroupId(@Param("groupId") Integer groupId);
+
     public int batchUpdateGroupId(@Param("ids") List<Integer> ids, @Param("groupId") Integer groupId);
 
     public int updateAllAutoReply(@Param("autoReply") Boolean autoReply);

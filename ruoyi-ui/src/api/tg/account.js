@@ -90,6 +90,14 @@ export function logoutBatch(batchNo) {
   })
 }
 
+// 按账号分组解除冻结
+export function unfreezeByGroup(groupId) {
+  return request({
+    url: '/tg/account/unfreezeByGroup/' + groupId,
+    method: 'put'
+  })
+}
+
 // 账号分组登出（按账号分组）
 export function logoutByGroup(groupId) {
   return request({

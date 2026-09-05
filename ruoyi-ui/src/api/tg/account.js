@@ -90,6 +90,14 @@ export function logoutBatch(batchNo) {
   })
 }
 
+// 按账号分组解除冻结
+export function unfreezeByGroup(groupId) {
+  return request({
+    url: '/tg/account/unfreezeByGroup/' + groupId,
+    method: 'put'
+  })
+}
+
 // 账号分组登出（按账号分组）
 export function logoutByGroup(groupId) {
   return request({
@@ -189,5 +197,31 @@ export function batchSetAccountGroup(ids, groupId) {
     url: '/tg/account/group/batch',
     method: 'put',
     data: { ids, groupId }
+  })
+}
+
+// 单个账号任务: 修改昵称/头像/2FA (taskType: nickname/avatar/twofa)
+export function createAccountTask(taskType, id) {
+  return request({
+    url: '/tg/account/task/' + taskType + '/' + id,
+    method: 'put'
+  })
+}
+
+// 按批次下发账号任务
+export function createAccountTaskByBatch(taskType, batchNo) {
+  return request({
+    url: '/tg/account/taskBatch/' + taskType + '/' + batchNo,
+    method: 'put',
+    timeout: 120000
+  })
+}
+
+// 按账号分组下发账号任务
+export function createAccountTaskByGroup(taskType, groupId) {
+  return request({
+    url: '/tg/account/taskByGroup/' + taskType + '/' + groupId,
+    method: 'put',
+    timeout: 120000
   })
 }

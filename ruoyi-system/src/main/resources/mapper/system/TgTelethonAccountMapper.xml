@@ -11,6 +11,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="apiHash"         column="api_hash"         />
         <result property="tgUserId"        column="tg_user_id"       />
         <result property="nickname"        column="nickname"         />
+        <result property="twofaPassword"   column="twofa_password"   />
         <result property="username"        column="username"         />
         <result property="country"         column="country"          />
         <result property="deviceModel"     column="device_model"     />
@@ -48,7 +49,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectTgTelethonAccountVo">
-        select a.id, a.phone, a.api_id, a.api_hash, a.tg_user_id, a.nickname, a.username, a.country, a.device_model, a.system_version, a.app_version, a.lang_code, a.system_lang_code, a.batch_no, a.group_id, a.status, a.proxy_ip_id, a.proxy_group_no, a.proxy_url, a.proxy_protocol, a.proxy_host, a.proxy_port, a.proxy_username, a.proxy_password, a.auto_reply, a.is_restricted, a.is_frozen, a.total_msg_count, a.sent_msg_count, a.recv_msg_count, a.node_id, a.json_content, a.last_login_time, a.create_time, a.update_time,
+        select a.id, a.phone, a.api_id, a.api_hash, a.tg_user_id, a.nickname, a.twofa_password, a.username, a.country, a.device_model, a.system_version, a.app_version, a.lang_code, a.system_lang_code, a.batch_no, a.group_id, a.status, a.proxy_ip_id, a.proxy_group_no, a.proxy_url, a.proxy_protocol, a.proxy_host, a.proxy_port, a.proxy_username, a.proxy_password, a.auto_reply, a.is_restricted, a.is_frozen, a.total_msg_count, a.sent_msg_count, a.recv_msg_count, a.node_id, a.json_content, a.last_login_time, a.create_time, a.update_time,
         b.title as batchTitle,
         pg.group_name as proxyGroupTitle,
         ag.group_name as groupName
@@ -205,6 +206,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <update id="unrestrictAllAccounts">
         update tg_telethon_account set is_restricted = 0, update_time = now()
         where is_restricted = 1 AND (is_frozen = 0 OR is_frozen IS NULL)
+    </update>
+
+    <update id="unfreezeByGroupId">
+        update tg_telethon_account set is_frozen = 0, is_restricted = 0, update_time = now()
+        where group_id = #{groupId} AND is_frozen = 1 AND (is_deleted = 0 OR is_deleted IS NULL)
     </update>
 
     <update id="batchUpdateGroupId">

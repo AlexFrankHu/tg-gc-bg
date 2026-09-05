@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TgAvatarMaterialMapper">
+
+    <resultMap type="TgAvatarMaterial" id="TgAvatarMaterialResult">
+        <result property="id"         column="id"          />
+        <result property="fileName"   column="file_name"   />
+        <result property="filePath"   column="file_path"   />
+        <result property="createTime" column="create_time" />
+    </resultMap>
+
+    <sql id="selectVo">
+        select id, file_name, file_path, create_time from tg_avatar_material
+    </sql>
+
+    <select id="selectList" parameterType="TgAvatarMaterial" resultMap="TgAvatarMaterialResult">
+        <include refid="selectVo"/>
+        <where>
+            <if test="fileName != null and fileName != ''">
+                AND file_name like concat('%', #{fileName}, '%')
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectByIds" parameterType="Integer" resultMap="TgAvatarMaterialResult">
+        <include refid="selectVo"/>
+        where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="selectAllPaths" resultType="String">
+        select file_path from tg_avatar_material
+    </select>
+
+    <insert id="insert" parameterType="TgAvatarMaterial" useGeneratedKeys="true" keyProperty="id">
+        insert into tg_avatar_material (file_name, file_path, create_time)
+        values (#{fileName}, #{filePath}, now())
+    </insert>
+
+    <delete id="deleteByIds" parameterType="Integer">
+        delete from tg_avatar_material where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

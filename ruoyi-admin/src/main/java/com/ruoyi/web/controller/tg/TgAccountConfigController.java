@@ -26,6 +26,8 @@ import com.ruoyi.system.domain.TgProxyAssignLog;
 import com.ruoyi.system.domain.TgImportBatch;
 import com.ruoyi.system.service.ITgTelethonAccountService;
 import com.ruoyi.system.service.ITgImportBatchService;
+import com.ruoyi.system.service.ITgAccountTaskService;
+import java.util.Collections;
 import com.ruoyi.system.mapper.TgProxyIpMapper;
 import com.ruoyi.system.mapper.TgProxyAssignLogMapper;
 import com.ruoyi.system.mapper.TgProxyGroupMapper;
@@ -55,6 +57,9 @@ public class TgAccountConfigController extends BaseController
 
     @Autowired
     private ITgTelethonAccountService tgTelethonAccountService;
+
+    @Autowired
+    private ITgAccountTaskService tgAccountTaskService;
 
     @Autowired
     private TgProxyIpMapper tgProxyIpMapper;
@@ -294,6 +299,17 @@ public class TgAccountConfigController extends BaseController
     }
 
     /**
+     * 按账号分组解除冻结 - 将该分组下所有已冻结账号的 is_frozen/is_restricted 置 0
+     */
+    @PreAuthorize("@ss.hasPermi('tg:account:edit')")
+    @PutMapping("/unfreezeByGroup/{groupId}")
+    public AjaxResult unfreezeByGroup(@PathVariable("groupId") Integer groupId)
+    {
+        int rows = tgTelethonAccountService.unfreezeByGroupId(groupId);
+        return AjaxResult.success("已解除 " + rows + " 个账号的冻结", rows);
+    }
+
+    /**
      * 账号分组登出 - 按账号分组将在线账号设置为 waitLogout(等待登出)，节点定时器轮询到后真正登出并释放资源
      */
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")
@@ -312,6 +328,68 @@ public class TgAccountConfigController extends BaseController
             setCount++;
         }
         return success("设置成功，共设置 " + setCount + " 个账号");
+    }
+
+    /**
+     * 单个账号任务: 修改昵称/头像/2FA (taskType: nickname/avatar/twofa), 由节点轮询执行
+     */
+    @PreAuthorize("@ss.hasPermi('tg:account:edit')")
+    @PutMapping("/task/{taskType}/{id}")
+    public AjaxResult createTask(@PathVariable("taskType") String taskType, @PathVariable("id") Integer id)
+    {
+        TgTelethonAccount account = tgTelethonAccountService.selectTgTelethonAccountById(id);
+        if (account == null)
+        {
+            return error("账号不存在");
+        }
+        try
+        {
+            return success(tgAccountTaskService.createTasks(taskType, Collections.singletonList(account), "single", String.valueOf(id)));
+        }
+        catch (RuntimeException e)
+        {
+            return error(e.getMessage());
+        }
+    }
+
+    /**
+     * 按批次下发账号任务: 修改昵称/头像/2FA
+     */
+    @PreAuthorize("@ss.hasPermi('tg:account:edit')")
+    @PutMapping("/taskBatch/{taskType}/{batchNo}")
+    public AjaxResult createTaskByBatch(@PathVariable("taskType") String taskType, @PathVariable("batchNo") String batchNo)
+    {
+        TgTelethonAccount query = new TgTelethonAccount();
+        query.setBatchNo(batchNo);
+        List<TgTelethonAccount> accounts = tgTelethonAccountService.selectTgTelethonAccountList(query);
+        try
+        {
+            return success(tgAccountTaskService.createTasks(taskType, accounts, "batch", batchNo));
+        }
+        catch (RuntimeException e)
+        {
+            return error(e.getMessage());
+        }
+    }
+
+    /**
+     * 按账号分组下发账号任务: 修改昵称/头像/2FA
+     */
+    @PreAuthorize("@ss.hasPermi('tg:account:edit')")
+    @PutMapping("/taskByGroup/{taskType}/{groupId}")
+    public AjaxResult createTaskByGroup(@PathVariable("taskType") String taskType, @PathVariable("groupId") Integer groupId)
+    {
+        TgTelethonAccount query = new TgTelethonAccount();
+        query.setGroupId(groupId);
+        List<TgTelethonAccount> accounts = tgTelethonAccountService.selectTgTelethonAccountList(query);
+        try
+        {
+            return success(tgAccountTaskService.createTasks(taskType, accounts, "group", String.valueOf(groupId)));
+        }
+        catch (RuntimeException e)
+        {
+            return error(e.getMessage());
+        }
     }
 
     /**

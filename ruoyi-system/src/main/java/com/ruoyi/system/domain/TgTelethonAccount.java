@@ -29,6 +29,9 @@ public class TgTelethonAccount extends BaseEntity
     /** 昵称(firstName + lastName) */
     private String nickname;
 
+    /** 2FA密码 */
+    private String twofaPassword;
+
     /** 用户名 */
     private String username;
 
@@ -151,6 +154,8 @@ public class TgTelethonAccount extends BaseEntity
 
     public String getNickname() { return nickname; }
     public void setNickname(String nickname) { this.nickname = nickname; }
+    public String getTwofaPassword() { return twofaPassword; }
+    public void setTwofaPassword(String twofaPassword) { this.twofaPassword = twofaPassword; }
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }

@@ -51,10 +51,14 @@
         </template>
       </el-table-column>
       <el-table-column label="创建时间" align="center" prop="createTime" width="180" />
-      <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="500" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-button link type="primary" icon="Edit" v-hasPermi="['tg:accountGroup:edit']" @click="handleUpdate(scope.row)">修改</el-button>
           <el-button link type="success" icon="UserFilled" v-hasPermi="['tg:accountGroup:assign']" @click="handleAssignContacts(scope.row)">添加好友</el-button>
+          <el-button link type="warning" v-hasPermi="['tg:account:edit']" @click="handleGroupTask('nickname', scope.row)">修改昵称</el-button>
+          <el-button link type="warning" v-hasPermi="['tg:account:edit']" @click="handleGroupTask('avatar', scope.row)">修改头像</el-button>
+          <el-button link type="warning" v-hasPermi="['tg:account:edit']" @click="handleGroupTask('twofa', scope.row)">修改2FA密码</el-button>
+          <el-button link type="danger" v-hasPermi="['tg:account:edit']" @click="handleUnfreeze(scope.row)">解除冻结</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -133,6 +137,7 @@
 <script setup name="AccountGroup">
 import { listAccountGroup, addAccountGroup, updateAccountGroup, assignContactsByGroup } from "@/api/tg/accountGroup";
 import { listAllContactImportBatch } from "@/api/tg/contactImport";
+import { createAccountTaskByGroup, unfreezeByGroup } from "@/api/tg/account";
 
 const { proxy } = getCurrentInstance();
 
@@ -255,6 +260,29 @@ function submitAssignContacts() {
   }).finally(() => {
     assignContactLoading.value = false;
   });
+}
+
+const taskTypeText = t => ({ nickname: '修改昵称', avatar: '修改头像', twofa: '修改2FA密码' }[t] || t);
+
+function handleGroupTask(type, row) {
+  let tip = '';
+  if (type === 'nickname') tip = '昵称从「昵称素材库」随机获取';
+  else if (type === 'avatar') tip = '头像从「头像素材库」随机获取';
+  else tip = '新密码为随机 8 位数字，旧密码取 2FA 密码字段或导入 json，均无则跳过';
+  proxy.$modal.confirm(`是否对分组「${row.groupName}」下的在线账号执行「${taskTypeText(type)}」？${tip}；由节点异步执行，结果见「账号任务」页。`).then(() => {
+    return createAccountTaskByGroup(type, row.id);
+  }).then(res => {
+    proxy.$modal.msgSuccess(res.msg || "任务已下发");
+  }).catch(() => {});
+}
+
+function handleUnfreeze(row) {
+  proxy.$modal.confirm(`是否解除分组「${row.groupName}」下全部账号的冻结状态？当前冻结 ${row.frozenCount ?? 0} 个，解除后同时解除限制。`).then(() => {
+    return unfreezeByGroup(row.id);
+  }).then(res => {
+    proxy.$modal.msgSuccess(res.msg || "解除成功");
+    getList();
+  }).catch(() => {});
 }
 
 getList();

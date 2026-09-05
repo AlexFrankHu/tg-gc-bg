@@ -77,6 +77,12 @@ public class TgTelethonAccountServiceImpl implements ITgTelethonAccountService
     }
 
     @Override
+    public int unfreezeByGroupId(Integer groupId)
+    {
+        return tgTelethonAccountMapper.unfreezeByGroupId(groupId);
+    }
+
+    @Override
     public int batchUpdateGroupId(List<Integer> ids, Integer groupId)
     {
         return tgTelethonAccountMapper.batchUpdateGroupId(ids, groupId);

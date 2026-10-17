@@ -222,7 +222,7 @@ public class TgAccountConfigController extends BaseController
     }
 
     /**
-     * 批量登录 - 按批次将所有有代理的账号设置为login1状态
+     * 批量登录 - 按批次将所有有代理的账号设置为login1状态(跳过受限/冻结账号)
      */
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")
     @PutMapping("/loginBatch/{batchNo}")
@@ -236,21 +236,27 @@ public class TgAccountConfigController extends BaseController
         List<TgTelethonAccount> accounts = tgTelethonAccountService.selectTgTelethonAccountList(query);
 
         int setCount = 0;
+        int skipRestricted = 0;
         for (TgTelethonAccount acc : accounts)
         {
             if (acc.getIsDeleted() != null && acc.getIsDeleted() == 1) continue;
             if ("online".equals(acc.getStatus())) continue;
+            if (Boolean.TRUE.equals(acc.getIsRestricted()) || Boolean.TRUE.equals(acc.getIsFrozen()))
+            {
+                skipRestricted++;
+                continue;
+            }
             if (acc.getProxyHost() != null && !acc.getProxyHost().isEmpty())
             {
                 tgTelethonAccountService.updateStatusById(acc.getId(), "login1");
                 setCount++;
             }
         }
-        return success("设置成功等待登录，共设置 " + setCount + " 个账号");
+        return success("设置成功等待登录，共设置 " + setCount + " 个账号，跳过受限/冻结账号 " + skipRestricted + " 个");
     }
 
     /**
-     * 账号分组批量登录 - 按账号分组将所有有代理的账号设置为login1状态
+     * 账号分组批量登录 - 按账号分组将所有有代理的账号设置为login1状态(跳过受限/冻结账号)
      */
     @PreAuthorize("@ss.hasPermi('tg:account:edit')")
     @PutMapping("/loginByGroup/{groupId}")
@@ -261,17 +267,23 @@ public class TgAccountConfigController extends BaseController
         List<TgTelethonAccount> accounts = tgTelethonAccountService.selectTgTelethonAccountList(query);
 
         int setCount = 0;
+        int skipRestricted = 0;
         for (TgTelethonAccount acc : accounts)
         {
             if (acc.getIsDeleted() != null && acc.getIsDeleted() == 1) continue;
             if ("online".equals(acc.getStatus())) continue;
+            if (Boolean.TRUE.equals(acc.getIsRestricted()) || Boolean.TRUE.equals(acc.getIsFrozen()))
+            {
+                skipRestricted++;
+                continue;
+            }
             if (acc.getProxyHost() != null && !acc.getProxyHost().isEmpty())
             {
                 tgTelethonAccountService.updateStatusById(acc.getId(), "login1");
                 setCount++;
             }
         }
-        return success("设置成功等待登录，共设置 " + setCount + " 个账号");
+        return success("设置成功等待登录，共设置 " + setCount + " 个账号，跳过受限/冻结账号 " + skipRestricted + " 个");
     }
 
     /**

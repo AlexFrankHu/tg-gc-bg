@@ -642,7 +642,7 @@ function submitBatchLogin() {
   batchLoginLoading.value = true;
   const batchNo = selectedBatchNo.value === '__all__' ? 'all' : selectedBatchNo.value;
   loginBatch(batchNo).then(res => {
-    proxy.$modal.msgSuccess("批量登录请求已发送，请稍候刷新查看结果");
+    proxy.$modal.msgSuccess("批量登录请求已发送，请稍候刷新查看结果" + (res.msg ? "（" + res.msg + "）" : ""));
     batchLoginVisible.value = false;
     setTimeout(() => { getList(); }, 5000);
   }).catch(err => {
@@ -666,7 +666,7 @@ function submitGroupLogin() {
   if (selectedLoginGroupId.value == null) return;
   groupLoginLoading.value = true;
   loginByGroup(selectedLoginGroupId.value).then(res => {
-    proxy.$modal.msgSuccess("账号分组批量登录请求已发送，请稍候刷新查看结果");
+    proxy.$modal.msgSuccess("账号分组批量登录请求已发送，请稍候刷新查看结果" + (res.msg ? "（" + res.msg + "）" : ""));
     groupLoginVisible.value = false;
     setTimeout(() => { getList(); }, 5000);
   }).catch(err => {

@@ -13,4 +13,7 @@ public interface ITgContactService
     public int deleteTgContactById(Integer id);
     public int updateAutoReplyById(Integer id, Boolean autoReply);
     public int updateAllAutoReply(Boolean autoReply);
+
+    /** 从 userIds 中筛出是任意账号好友的 TG 用户ID（去重, 保持传入顺序） */
+    public List<Long> filterFriendUserIds(List<Long> userIds);
 }

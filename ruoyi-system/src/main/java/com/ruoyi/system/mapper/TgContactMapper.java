@@ -21,4 +21,6 @@ public interface TgContactMapper
     public int batchUpdateContactMessageCounts(@Param("list") List<TgContact> list);
 
     public List<TgContact> selectContactKeysByAccountIds(@Param("ids") List<Integer> ids);
+
+    public List<Long> selectExistingUserIds(@Param("userIds") List<Long> userIds);
 }

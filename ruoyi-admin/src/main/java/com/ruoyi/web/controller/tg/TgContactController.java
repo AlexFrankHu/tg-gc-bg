@@ -128,7 +128,7 @@ public class TgContactController extends BaseController
         return toAjax(tgContactService.updateAllAutoReply(autoReply));
     }
 
-    private static final int CHECK_FRIENDS_MAX_SIZE = 10000;
+    private static final int CHECK_FRIENDS_MAX_SIZE = 100;
 
     private static final ObjectMapper CHECK_FRIENDS_MAPPER = new ObjectMapper();
 
@@ -136,7 +136,7 @@ public class TgContactController extends BaseController
     private String openApiKey;
 
     /**
-     * 外部系统调用: 传入 TG 用户ID 数组, 返回其中是任意账号好友(real/fake)的用户ID数组
+     * 查询好友(外部系统调用): 传入 TG 用户ID 数组(最多 100 个), 返回其中是任意账号好友(real/fake)的用户ID数组
      * 鉴权: 请求头 X-API-Key, 值为配置项 tg.open-api.key
      */
     @Anonymous

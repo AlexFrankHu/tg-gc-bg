@@ -8,14 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.security.MessageDigest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -121,6 +126,89 @@ public class TgContactController extends BaseController
     public AjaxResult updateAllAutoReply(@PathVariable("autoReply") Boolean autoReply)
     {
         return toAjax(tgContactService.updateAllAutoReply(autoReply));
+    }
+
+    private static final int CHECK_FRIENDS_MAX_SIZE = 100;
+
+    private static final ObjectMapper CHECK_FRIENDS_MAPPER = new ObjectMapper();
+
+    @Value("${tg.open-api.key:}")
+    private String openApiKey;
+
+    /**
+     * 查询好友(外部系统调用): 传入 TG 用户ID 数组(最多 100 个), 返回其中是任意账号好友(real/fake)的用户ID数组
+     * 鉴权: 请求头 X-API-Key, 值为配置项 tg.open-api.key
+     */
+    @Anonymous
+    @PostMapping("/checkFriends")
+    public ResponseEntity<AjaxResult> checkFriends(@RequestHeader(value = "X-API-Key", required = false) String apiKey,
+                                                   @RequestBody(required = false) String body)
+    {
+        if (openApiKey == null || openApiKey.isEmpty())
+        {
+            return checkFriendsError(HttpStatus.SERVICE_UNAVAILABLE, "接口未配置 API Key");
+        }
+        if (apiKey == null || !MessageDigest.isEqual(openApiKey.getBytes(StandardCharsets.UTF_8), apiKey.getBytes(StandardCharsets.UTF_8)))
+        {
+            return checkFriendsError(HttpStatus.UNAUTHORIZED, "API Key 无效");
+        }
+        JsonNode userIds;
+        try
+        {
+            userIds = body == null || body.trim().isEmpty() ? null : CHECK_FRIENDS_MAPPER.readTree(body);
+        }
+        catch (Exception e)
+        {
+            return checkFriendsError(HttpStatus.BAD_REQUEST, "请求体不是合法的 JSON");
+        }
+        if (userIds != null && !userIds.isArray())
+        {
+            return checkFriendsError(HttpStatus.BAD_REQUEST, "请求体必须是用户ID数组");
+        }
+        if (userIds == null || userIds.size() == 0)
+        {
+            return checkFriendsError(HttpStatus.BAD_REQUEST, "用户ID数组不能为空");
+        }
+        if (userIds.size() > CHECK_FRIENDS_MAX_SIZE)
+        {
+            return checkFriendsError(HttpStatus.BAD_REQUEST, "单次最多 " + CHECK_FRIENDS_MAX_SIZE + " 个用户ID");
+        }
+        List<Long> ids = new ArrayList<>(userIds.size());
+        for (JsonNode o : userIds)
+        {
+            Long id = parseUserId(o);
+            if (id == null)
+            {
+                return checkFriendsError(HttpStatus.BAD_REQUEST, "非法用户ID: " + o);
+            }
+            ids.add(id);
+        }
+        return ResponseEntity.ok(AjaxResult.success(tgContactService.filterFriendUserIds(ids)));
+    }
+
+    private static ResponseEntity<AjaxResult> checkFriendsError(HttpStatus status, String msg)
+    {
+        return ResponseEntity.status(status).body(AjaxResult.error(status.value(), msg));
+    }
+
+    private static Long parseUserId(JsonNode o)
+    {
+        if (o.isIntegralNumber() && o.canConvertToLong())
+        {
+            return o.longValue();
+        }
+        if (o.isTextual() && o.asText().trim().matches("-?\\d{1,19}"))
+        {
+            try
+            {
+                return Long.parseLong(o.asText().trim());
+            }
+            catch (NumberFormatException e)
+            {
+                return null;
+            }
+        }
+        return null;
     }
 
     @PostMapping("/sendGreeting")

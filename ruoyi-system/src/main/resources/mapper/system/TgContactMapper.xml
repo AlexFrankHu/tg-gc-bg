@@ -208,6 +208,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
     </select>
 
+    <select id="selectExistingUserIds" resultType="java.lang.Long">
+        select distinct user_id from tg_contact
+        where user_id in
+        <foreach collection="userIds" item="uid" open="(" separator="," close=")">#{uid}</foreach>
+    </select>
+
     <!-- 按主键分批更新, 每批只锁少量行且立即提交, 避免长时间大范围持锁 -->
     <update id="batchUpdateContactMessageCounts" parameterType="java.util.List">
         UPDATE tg_contact
